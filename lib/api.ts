@@ -352,7 +352,11 @@ function normalizeVargaChart(name: string, raw: any): VargaChart {
       ])
     : Object.entries(placementsRaw);
   const placements: VargaPlacement[] = [];
-  let lagnaSign = signNumber(pick(raw, "lagna_sign", "lagna", "ascendant_sign"));
+  const lagnaRaw = pick(raw, "lagna_sign", "lagna", "ascendant_sign", "lagna_rasi");
+  let lagnaSign =
+    lagnaRaw && typeof lagnaRaw === "object"
+      ? signNumber(pick(lagnaRaw, "sign", "rashi", "sign_number", "sign_name"))
+      : signNumber(lagnaRaw);
   for (const [pname, p] of entries) {
     const sign =
       typeof p === "number" || typeof p === "string"

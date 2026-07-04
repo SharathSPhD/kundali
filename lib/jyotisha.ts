@@ -42,10 +42,15 @@ export function signName(sign: number): string {
   return SIGN_NAMES[((sign - 1) % 12 + 12) % 12] ?? `Sign ${sign}`;
 }
 
-/** Accepts a sign as number (1-12) or a name and returns 1-12 (0 if unknown). */
+/**
+ * Accepts a sign as a name, or the engine's 0-indexed sign number
+ * (0 = Aries … 11 = Pisces), and returns the app's 1-indexed sign (1-12),
+ * or 0 if unknown. The Python engine emits `sign` 0-indexed alongside
+ * `sign_name`; the UI works in 1-indexed signs.
+ */
 export function signNumber(value: unknown): number {
   if (typeof value === "number" && Number.isFinite(value)) {
-    return ((Math.round(value) - 1) % 12 + 12) % 12 + 1;
+    return (Math.round(value) % 12 + 12) % 12 + 1;
   }
   if (typeof value === "string") {
     const asNum = Number(value);
