@@ -1,0 +1,73 @@
+{
+  "notes": [
+    "Famous published charts used as golden references. Ratings follow Astro-Databank (AA = birth certificate/record, A = memory/quoted).",
+    "Pre-timezone-era Indian/European births use Local Mean Time: tz_offset = longitude/15 unless a civil standard applied.",
+    "Degree-level checks are done with the ayanamsa the published chart used (B.V. Raman's charts -> 'raman'); sign-level sanity checks are repeated with Lahiri.",
+    "Einstein: the published Raman-ayanamsa chart has Moon in Scorpio. The AA-rated tropical Moon is 14deg31 Sagittarius; minus the Raman ayanamsa (~20.7deg in 1879) that is Scorpio ~23.8, which is what we assert. (An earlier draft of this task quoted Scorpio 13.8 — a 10-degree transcription slip inconsistent with the AA tropical position.)",
+    "Nehru: sign-level only (birth time A-rated). His famous chart is Cancer lagna / Cancer Moon under Lahiri. Under Raman the lagna computes to Leo 0.3 — right on the cusp — so the sign-level check is asserted under Lahiri, per the chart's own convention.",
+    "Bose: Cuttack 1897 ran on Madras Time (UTC+5:21:10 = 5.3528h). Both Madras Time and LMT (5.7222h) yield Aries lagna and Uttara Phalguni Moon; Madras Time is used as the historically correct civil standard."
+  ],
+  "cases": [
+    {
+      "name": "Albert Einstein",
+      "rating": "AA",
+      "birth": { "date": "1879-03-14", "time": "11:30", "lat": 48.4, "lon": 10.0, "tz_offset": 0.6667 },
+      "checks": [
+        {
+          "ayanamsa": "raman",
+          "lagna": { "sign": "Gemini", "deg": 21.8, "tol": 1.0 },
+          "planets": {
+            "Moon": { "sign": "Scorpio", "deg": 23.8, "tol": 1.0 },
+            "Sun": { "sign": "Pisces", "deg": 2.77, "tol": 1.0 }
+          }
+        },
+        {
+          "ayanamsa": "lahiri",
+          "lagna": { "sign": "Gemini" },
+          "planets": { "Moon": { "sign": "Scorpio" } }
+        }
+      ]
+    },
+    {
+      "name": "Swami Vivekananda",
+      "rating": "AA",
+      "birth": { "date": "1863-01-12", "time": "06:33", "lat": 22.533, "lon": 88.367, "tz_offset": 5.8911 },
+      "checks": [
+        {
+          "ayanamsa": "raman",
+          "lagna": { "sign": "Sagittarius", "deg": 27.5, "tol": 1.2 },
+          "planets": { "Moon": { "sign": "Virgo", "deg": 18.9, "tol": 1.2 } }
+        },
+        {
+          "ayanamsa": "lahiri",
+          "lagna": { "sign": "Sagittarius" },
+          "planets": { "Moon": { "sign": "Virgo" } }
+        }
+      ]
+    },
+    {
+      "name": "Jawaharlal Nehru",
+      "rating": "A",
+      "birth": { "date": "1889-11-14", "time": "23:30", "lat": 25.45, "lon": 81.85, "tz_offset": 5.4567 },
+      "checks": [
+        {
+          "ayanamsa": "lahiri",
+          "lagna": { "sign": "Cancer" },
+          "planets": { "Moon": { "sign": "Cancer" } }
+        }
+      ]
+    },
+    {
+      "name": "Subhas Chandra Bose",
+      "rating": "AA",
+      "birth": { "date": "1897-01-23", "time": "12:00", "lat": 20.5, "lon": 85.833, "tz_offset": 5.3528 },
+      "checks": [
+        {
+          "ayanamsa": "lahiri",
+          "lagna": { "sign": "Aries" },
+          "planets": { "Moon": { "sign": "Virgo", "nakshatra": "Uttara Phalguni" } }
+        }
+      ]
+    }
+  ]
+}

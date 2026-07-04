@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: kundali-engine
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: ALLOWED_ORIGINS
+        sync: false          # e.g. https://your-app.vercel.app
+      - key: SUPABASE_JWKS_URL
+        sync: false          # https://<ref>.supabase.co/auth/v1/.well-known/jwks.json
+      - key: SUPABASE_JWT_SECRET
+        sync: false          # HS256 fallback (legacy projects)
+      - key: AUTH_DISABLED
+        value: "0"

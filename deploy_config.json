@@ -1,0 +1,4 @@
+{
+  "supabase_url": "https://mcnknhbtipvclirawhxw.supabase.co",
+  "_note": "Public project URL only — used by backend auth to derive the JWKS endpoint when env vars are absent (Vercel functions)."
+}

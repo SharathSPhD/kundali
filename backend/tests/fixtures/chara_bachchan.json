@@ -1,0 +1,74 @@
+{
+  "_source": "K.N. Rao, 'Predicting Through Jaimini's Chara Dasha' (published Bachchan table; single-source caveat). Computed values pinned by app.engine.jaimini.",
+  "_note": "Birth time 16:00 IST per Astrodatabank / Rao's Aquarius lagna; the task brief's 14:50:30 gives Capricorn 28.99 and is documented as divergent.",
+  "birth": {
+    "date": "1942-10-11",
+    "time": "16:00:00",
+    "lat": 25.45,
+    "lon": 81.85,
+    "tz_offset": 5.5,
+    "ayanamsa": "lahiri"
+  },
+  "first_cycle": [
+    {
+      "sign": "Aquarius",
+      "start_year": 1942,
+      "years": 9
+    },
+    {
+      "sign": "Pisces",
+      "start_year": 1951,
+      "years": 8
+    },
+    {
+      "sign": "Aries",
+      "start_year": 1959,
+      "years": 5
+    },
+    {
+      "sign": "Taurus",
+      "start_year": 1964,
+      "years": 4
+    },
+    {
+      "sign": "Gemini",
+      "start_year": 1968,
+      "years": 3
+    },
+    {
+      "sign": "Cancer",
+      "start_year": 1971,
+      "years": 9
+    },
+    {
+      "sign": "Leo",
+      "start_year": 1980,
+      "years": 11
+    },
+    {
+      "sign": "Virgo",
+      "start_year": 1991,
+      "years": 12
+    },
+    {
+      "sign": "Libra",
+      "start_year": 2003,
+      "years": 11
+    },
+    {
+      "sign": "Scorpio",
+      "start_year": 2014,
+      "years": 10
+    },
+    {
+      "sign": "Sagittarius",
+      "start_year": 2024,
+      "years": 7
+    },
+    {
+      "sign": "Capricorn",
+      "start_year": 2031,
+      "years": 8
+    }
+  ]
+}

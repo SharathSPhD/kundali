@@ -1,0 +1,45 @@
+{
+  "source": "Drik Panchang (drikpanchang.com) — independent capture; Lahiri ayanamsa, MEAN nodes",
+  "moment": "2026-07-04 01:25:34 local (UTC+1), Watford UK",
+  "birth": {
+    "date": "2026-07-04",
+    "time": "01:25:34",
+    "lat": 51.656,
+    "lon": -0.396,
+    "tz_offset": 1.0
+  },
+  "positions_deg": {
+    "Sun": 77.846,
+    "Moon": 302.637,
+    "Mars": 39.466,
+    "Mercury": 91.332,
+    "Jupiter": 96.576,
+    "Venus": 119.372,
+    "Saturn": 350.075,
+    "Rahu": 308.191,
+    "Ketu": 128.191
+  },
+  "retrograde": ["Mercury"],
+  "lagna": { "sign_name": "Aries", "degree_in_sign": 15.71 },
+  "panchanga": {
+    "nakshatra": "Dhanishta",
+    "pada": 3,
+    "tithi_number": 19,
+    "tithi_name": "Chaturthi",
+    "paksha": "Krishna",
+    "yoga_number": 2,
+    "yoga_name": "Priti",
+    "karana_number": 37,
+    "karana_name": "Balava",
+    "vara": "Shukravara"
+  },
+  "derivation_notes": [
+    "tithi/yoga/karana computed independently from the reference longitudes:",
+    "elongation = (302.637 - 77.846) mod 360 = 224.791 -> tithi floor(224.791/12)+1 = 19 = Krishna Chaturthi",
+    "karana K = floor(224.791/6) = 37 -> movable cycle (37-1) mod 7 = 1 -> Balava",
+    "yoga sum = (77.846 + 302.637) mod 360 = 20.483 -> floor(20.483/13.3333)+1 = 2 -> Priti",
+    "nakshatra: 302.637/13.3333 -> index 22 (Dhanishta); 9.304 deg into it -> pada 3",
+    "vara: birth 01:25 local precedes Saturday's ~04:49 sunrise, so the Vedic day is still Friday -> Shukravara"
+  ],
+  "tolerances": { "planet_deg": 0.0334, "lagna_deg": 0.5 }
+}

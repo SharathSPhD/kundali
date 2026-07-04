@@ -1,0 +1,11 @@
+/frontend
+node_modules
+/backend/tests
+/backend/Dockerfile
+/backend/render.yaml
+backend/pytest-cache-files-*
+__pycache__
+._*
+.DS_Store
+*.md
+/supabase

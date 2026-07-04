@@ -1,0 +1,83 @@
+{
+  "_source": "computed by app.engine.shadbala (regression pin, NOT B.V. Raman's book values)",
+  "birth": {
+    "date": "1918-10-16",
+    "time": "14:22:16",
+    "lat": 13.0,
+    "lon": 77.5833,
+    "tz_offset": 5.5,
+    "ayanamsa": "raman"
+  },
+  "planets": {
+    "Sun": {
+      "sthana": 213.03,
+      "dig": 55.3,
+      "kala": 119.23,
+      "cheshta": 37.89,
+      "naisargika": 60.0,
+      "drik": 15.86,
+      "total_rupas": 8.355,
+      "ratio": 1.285
+    },
+    "Moon": {
+      "sthana": 126.5,
+      "dig": 38.75,
+      "kala": 194.66,
+      "cheshta": 86.89,
+      "naisargika": 51.4286,
+      "drik": -21.75,
+      "total_rupas": 7.941,
+      "ratio": 1.324
+    },
+    "Mars": {
+      "sthana": 172.15,
+      "dig": 48.52,
+      "kala": 27.11,
+      "cheshta": 35.71,
+      "naisargika": 17.1429,
+      "drik": 0.97,
+      "total_rupas": 5.027,
+      "ratio": 1.005
+    },
+    "Mercury": {
+      "sthana": 279.5,
+      "dig": 25.5,
+      "kala": 188.8,
+      "cheshta": 33.33,
+      "naisargika": 25.7143,
+      "drik": 15.64,
+      "total_rupas": 9.475,
+      "ratio": 1.354
+    },
+    "Jupiter": {
+      "sthana": 157.58,
+      "dig": 7.0,
+      "kala": 241.94,
+      "cheshta": 25.57,
+      "naisargika": 34.2857,
+      "drik": -16.03,
+      "total_rupas": 7.506,
+      "ratio": 1.155
+    },
+    "Venus": {
+      "sthana": 178.2,
+      "dig": 7.95,
+      "kala": 118.61,
+      "cheshta": 30.62,
+      "naisargika": 42.8571,
+      "drik": 18.45,
+      "total_rupas": 6.612,
+      "ratio": 1.202
+    },
+    "Saturn": {
+      "sthana": 177.29,
+      "dig": 53.54,
+      "kala": 98.86,
+      "cheshta": 45.0,
+      "naisargika": 8.5714,
+      "drik": 7.23,
+      "total_rupas": 6.508,
+      "ratio": 1.302
+    }
+  }
+}

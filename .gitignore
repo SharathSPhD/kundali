@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+pytest-cache-files-*/
+.venv/
+venv/
+
+# Environment (keep .env.example / .env.production which hold only public keys)
+.env
+.env.local
+.env*.local
+
+# Vercel
+.vercel
+
+# macOS / SMB junk
+._*
+.DS_Store
+.smbdelete*
+.AppleDouble
+
+# Logs / editor
+*.log
+.idea/
+.vscode/

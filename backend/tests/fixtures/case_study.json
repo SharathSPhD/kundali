@@ -1,0 +1,38 @@
+{
+  "_placeholder": false,
+  "_note": "Golden case. Dasha checks encode REAL Swiss Ephemeris boundaries (Lahiri, mean node, 365.25d year), which differ from an earlier LLM-chat reading (that chat approximated: it claimed Moon-Venus for 2009 and Mars-Mercury for 2014). Verified 2026-07-03.",
+  "birth": {
+    "date": "1981-06-19",
+    "time": "04:50",
+    "lat": 13.6884,
+    "lon": 75.2464,
+    "tz_offset": 5.5,
+    "place_name": "Thirthahalli, Karnataka, India"
+  },
+  "life_events": [
+    {"type": "marriage", "date": "2009-06-18"},
+    {"type": "child_birth", "date": "2014-06-07"},
+    {"type": "career_start", "date": "2003-11-01", "note": "first salary"},
+    {"type": "promotion", "date": "2004-06-01", "note": "step up"},
+    {"type": "relocation", "date": "2021-04-01", "note": "only move"},
+    {"type": "parent_death", "date": "2020-06-01", "note": "father; within difficult mid-2019 to mid-2021 window (health, job, father)"},
+    {"type": "other", "date": "2022-03-01", "note": "significant event per user"}
+  ],
+  "assertions": {
+    "lagna_sign_name": "Taurus",
+    "lagna_degree_approx": 16.0,
+    "lagna_degree_tolerance": 2.0,
+    "lagna_nakshatra": "Rohini",
+    "moon_sign_name": "Sagittarius",
+    "moon_house": 8,
+    "moon_nakshatra": "Purva Ashadha",
+    "dasha_checks": [
+      {"maha": "Mars", "antar": "Rahu", "contains": "2009-06-18"},
+      {"maha": "Mars", "antar": "Venus", "contains": "2014-06-07"},
+      {"maha": "Rahu", "antar": "Ketu", "contains": "2026-07-03"},
+      {"maha": "Moon", "antar": "Saturn", "contains": "2003-11-15"},
+      {"maha": "Rahu", "antar": "Saturn", "contains": "2021-04-01"},
+      {"maha": "Rahu", "antar": "Jupiter", "contains": "2020-06-01"}
+    ]
+  }
+}
