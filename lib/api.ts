@@ -415,10 +415,13 @@ function normalizeDashaNode(raw: any, level: number, now: Date): DashaPeriod {
 
 function normalizeDashas(raw: any): DashaPeriod[] {
   const now = new Date();
-  const tree = asArray(
-    pick(raw, "tree", "periods", "dashas", "mahadashas") ?? raw
+  // The engine returns { tree: { periods: [...] }, active, on }. Unwrap the
+  // tree object first, then read its periods; fall back to a flat array shape.
+  const treeRaw = pick(raw, "tree", "dashas", "mahadashas") ?? raw;
+  const periods = asArray(
+    pick(treeRaw, "periods", "mahadashas", "children") ?? treeRaw
   );
-  return tree.map((n) => normalizeDashaNode(n, 1, now));
+  return periods.map((n) => normalizeDashaNode(n, 1, now));
 }
 
 function normalizeWindow(raw: any): TimeWindow {
