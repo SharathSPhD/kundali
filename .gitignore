@@ -36,3 +36,6 @@ venv/
 *.log
 .idea/
 .vscode/
+
+# TS incremental build cache
+*.tsbuildinfo
