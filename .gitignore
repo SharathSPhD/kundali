@@ -42,3 +42,7 @@ venv/
 
 # Downloaded validation datasets (fetched on demand, see VALIDATION.md)
 backend/validation/data/
+
+# GB10 gateway: real tunnel credentials/config, never the .example template
+gb10-gateway/config.yml
+gb10-gateway/.env

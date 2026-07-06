@@ -1,0 +1,9 @@
+# Copy to config.yml (gitignored) after `cloudflared tunnel create kundali-gb10`.
+# The tunnel UUID and credentials-file path come from that command's output.
+tunnel: <TUNNEL_UUID>
+credentials-file: /home/<you>/.cloudflared/<TUNNEL_UUID>.json
+
+ingress:
+  - hostname: gb10.technektar.com
+    service: http://127.0.0.1:8100
+  - service: http_status:404
