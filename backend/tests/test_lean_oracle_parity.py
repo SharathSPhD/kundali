@@ -26,12 +26,18 @@ def _lean_available() -> bool:
     # Try building once
     if not (LEAN_DIR / "lakefile.toml").exists():
         return False
-    proc = subprocess.run(
-        ["lake", "build", "oracle"],
-        cwd=LEAN_DIR,
-        capture_output=True,
-        check=False,
-    )
+    try:
+        proc = subprocess.run(
+            ["lake", "build", "oracle"],
+            cwd=LEAN_DIR,
+            capture_output=True,
+            check=False,
+        )
+    except (FileNotFoundError, OSError):
+        # `lake` isn't on PATH — the standard backend-tests CI job doesn't
+        # install the Lean toolchain (that's the separate lean-verification
+        # job's job), so this is an expected skip there, not a failure.
+        return False
     return proc.returncode == 0 and ORACLE_BIN.exists()
 
 
