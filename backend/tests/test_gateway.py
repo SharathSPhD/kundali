@@ -115,3 +115,21 @@ def test_get_user_tier_without_user_id_defaults_to_basic(monkeypatch):
     monkeypatch.setattr(gateway, "_rest_get", fake_rest_get)
 
     assert gateway.get_user_tier("tok-abc", None) == "basic"
+
+
+def test_ollama_byok_accepts_base_url_without_api_key(monkeypatch):
+    monkeypatch.setattr(
+        gateway,
+        "get_user_credential",
+        lambda token, name: {"api_key": "", "base_url": "http://localhost:11434"}
+        if name == "ollama"
+        else None,
+    )
+    monkeypatch.setattr(gateway, "get_user_tier", lambda token, user_id: "basic")
+
+    provider, via = gateway.resolve_provider(_user())
+
+    assert isinstance(provider, OllamaProvider)
+    assert provider.base_url == "http://localhost:11434"
+    assert provider.api_key == ""
+    assert "Ollama" in via

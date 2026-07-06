@@ -1,7 +1,7 @@
 # External Validation
 
 This document is independent of the unit-test suite (`backend/tests/`,
-128 tests, all committed reference/golden charts). It reports how the
+196 tests, all committed reference/golden charts). It reports how the
 engine holds up against three external, uncontrolled sources of ground
 truth. Numbers below are from an actual run (2026-07-06); no cherry-picking
 — methodology and caveats are stated plainly, including a null result.

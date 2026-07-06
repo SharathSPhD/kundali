@@ -145,3 +145,6 @@ class InterpretResponse(BaseModel):
     blocked: bool = False
     upgrade_hint: Optional[str] = None
     engine_payload: Optional[dict[str, Any]] = None
+    verified: Optional[bool] = None
+    rejected_claims: list[dict[str, Any]] = []
+    verification_warnings: list[str] = []

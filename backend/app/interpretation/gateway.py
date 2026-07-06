@@ -5,7 +5,9 @@ no BYOK credential):
 
     1. BYOK           — a `user_llm_credentials` row exists for the
                          requested (or any) provider -> use it. Works for
-                         every tier, including `basic`.
+                         every tier, including `basic`. Ollama accepts either
+                         an api_key OR a base_url (local instances often need
+                         no key).
     2. admin / guest   — call the GB10 gateway server-to-server (trusted
                          internal secret, no per-user key needed).
     3. paid            — call the GB10 gateway with a stored app-level
@@ -118,7 +120,17 @@ def resolve_provider(
         if not name or name in ("template",):
             continue
         cred = get_user_credential(token, name)
-        if cred and cred.get("api_key"):
+        if not cred:
+            continue
+        if name == "ollama":
+            if cred.get("api_key") or cred.get("base_url"):
+                provider = get_provider(
+                    name,
+                    api_key=cred.get("api_key") or "",
+                    base_url=cred.get("base_url"),
+                )
+                return provider, f"your {name.capitalize()} key"
+        elif cred.get("api_key"):
             provider = get_provider(name, api_key=cred["api_key"], base_url=cred.get("base_url"))
             return provider, f"your {name.capitalize()} key"
 

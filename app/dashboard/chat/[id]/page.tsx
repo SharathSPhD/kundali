@@ -1,10 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Anchor, ArrowLeft, KeyRound, Send } from "lucide-react";
+import { Anchor, ArrowLeft, CheckCircle2, KeyRound, Send, ShieldAlert } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { interpret, type ChatTurn } from "@/lib/api";
+import {
+  getMyTier,
+  listMyCredentials,
+  type AccountTier,
+  type LlmCredential,
+} from "@/lib/account";
 import { getProfile } from "@/lib/profiles";
+import {
+  appendChatMessage,
+  getChatMessages,
+  supabaseConfigured,
+} from "@/lib/readings";
 import type { BirthProfile } from "@/lib/types";
 import { birthDataOf } from "@/lib/types";
 
@@ -15,6 +26,10 @@ interface ChatMessage {
   via?: string | null;
   blocked?: boolean;
   upgradeHint?: string | null;
+  provider?: string;
+  verified?: boolean | null;
+  rejectedClaims?: unknown[];
+  verificationWarnings?: string[];
 }
 
 const SUGGESTIONS = [
@@ -24,9 +39,27 @@ const SUGGESTIONS = [
   "What should I know about the current transits?",
 ];
 
-// How many prior turns to send back as context — enough for coherent
-// follow-ups without unbounded payload growth.
 const HISTORY_WINDOW = 6;
+
+function hasUsableInferencePath(
+  tier: AccountTier,
+  creds: LlmCredential[]
+): boolean {
+  if (!supabaseConfigured) return false;
+  if (tier !== "basic") return true;
+  return creds.some(
+    (c) =>
+      Boolean(c.apiKey?.trim()) ||
+      (c.provider === "ollama" && Boolean(c.baseUrl?.trim()))
+  );
+}
+
+function modeLabel(provider: string | null | undefined): string | null {
+  if (!provider || provider === "blocked") return null;
+  if (provider === "template") return "Deterministic summary";
+  if (provider === "template_qa") return "Deterministic Q&A";
+  return "LLM narrative + verified";
+}
 
 export default function ChatPage({ params }: { params: { id: string } }) {
   const [profile, setProfile] = useState<BirthProfile | null>(null);
@@ -34,17 +67,48 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [defaultProvider, setDefaultProvider] = useState<string | undefined>(
+    undefined
+  );
+  const [lastMode, setLastMode] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    getProfile(params.id)
-      .then((p) => {
-        if (!p) setError("Profile not found.");
+    let cancelled = false;
+    (async () => {
+      try {
+        const [p, tier, creds, stored] = await Promise.all([
+          getProfile(params.id),
+          getMyTier(),
+          listMyCredentials(),
+          getChatMessages(params.id),
+        ]);
+        if (cancelled) return;
+        if (!p) {
+          setError("Profile not found.");
+          return;
+        }
         setProfile(p);
-      })
-      .catch((err) =>
-        setError(err instanceof Error ? err.message : "Failed to load profile.")
-      );
+        if (stored.length > 0) {
+          setMessages(stored);
+          const lastAssistant = [...stored]
+            .reverse()
+            .find((m) => m.role === "assistant");
+          if (lastAssistant?.provider) {
+            setLastMode(modeLabel(lastAssistant.provider));
+          }
+        }
+        if (!hasUsableInferencePath(tier, creds)) {
+          setDefaultProvider("template");
+        }
+      } catch (err) {
+        if (!cancelled)
+          setError(err instanceof Error ? err.message : "Failed to load profile.");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [params.id]);
 
   useEffect(() => {
@@ -67,24 +131,37 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     setInput("");
     setError(null);
     const history = historyForRequest();
+    const resolvedProvider = provider ?? defaultProvider;
     setMessages((m) => [...m, { role: "user", content: q }]);
     setBusy(true);
     try {
-      const res = await interpret(birthDataOf(profile), q, provider, history);
-      setMessages((m) => [
-        ...m,
-        {
-          role: "assistant",
-          content: res.blocked
-            ? res.upgradeHint || "No inference is available for your account yet."
-            : res.text || "(empty response)",
-          citations: res.citations,
-          via: res.via,
-          blocked: res.blocked,
-          upgradeHint: res.upgradeHint,
-        },
-      ]);
-    } catch (err) {
+      const res = await interpret(birthDataOf(profile), q, resolvedProvider, history);
+      const assistantMsg: ChatMessage = {
+        role: "assistant",
+        content: res.blocked
+          ? res.upgradeHint || "No inference is available for your account yet."
+          : res.text || "(empty response)",
+        citations: res.citations,
+        via: res.via,
+        blocked: res.blocked,
+        upgradeHint: res.upgradeHint,
+        provider: res.provider,
+        verified: res.verified,
+        rejectedClaims: res.rejectedClaims,
+        verificationWarnings: res.verificationWarnings,
+      };
+      setMessages((m) => [...m, assistantMsg]);
+      setLastMode(modeLabel(res.provider));
+
+      void appendChatMessage(params.id, "user", q);
+      void appendChatMessage(params.id, "assistant", assistantMsg.content, {
+        citations: res.citations,
+        provider: res.provider,
+        verified: res.verified,
+        rejectedClaims: res.rejectedClaims,
+        verificationWarnings: res.verificationWarnings,
+      });
+    } catch {
       setMessages((m) => [
         ...m,
         {
@@ -101,9 +178,16 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   return (
     <div className="mx-auto flex h-[calc(100dvh-9rem)] max-w-3xl flex-col sm:h-[calc(100vh-10rem)]">
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-        <h1 className="font-display text-2xl font-bold text-slate-100">
-          {profile ? `${profile.label} — Ask the chart` : "Ask the chart"}
-        </h1>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="font-display text-2xl font-bold text-slate-100">
+            {profile ? `${profile.label} — Ask the chart` : "Ask the chart"}
+          </h1>
+          {lastMode && (
+            <span className="chip border-gold-700/50 text-[11px] text-gold-300">
+              {lastMode}
+            </span>
+          )}
+        </div>
         <Button href={`/dashboard/chart/${params.id}`} size="sm" icon={ArrowLeft}>
           Chart
         </Button>
@@ -118,7 +202,6 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
       {error && <p className="mb-4 text-sm text-red-300">{error}</p>}
 
-      {/* Message list */}
       <div className="card flex-1 space-y-4 overflow-y-auto p-4">
         {messages.length === 0 && (
           <div className="flex h-full flex-col items-center justify-center gap-3">
@@ -173,6 +256,19 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                   </button>
                 </div>
               )}
+              {m.role === "assistant" && !m.blocked && m.verified === true && (
+                <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-emerald-700/50 bg-emerald-900/20 px-2 py-0.5 text-[11px] text-emerald-300">
+                  <CheckCircle2 className="h-3 w-3" aria-hidden /> verified
+                </span>
+              )}
+              {m.role === "assistant" &&
+                !m.blocked &&
+                (m.rejectedClaims?.length ?? 0) > 0 && (
+                  <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-amber-700/50 bg-amber-900/20 px-2 py-0.5 text-[11px] text-amber-200">
+                    <ShieldAlert className="h-3 w-3" aria-hidden />{" "}
+                    {m.rejectedClaims!.length} claim(s) unverified
+                  </span>
+                )}
               {m.via && !m.blocked && (
                 <p className="mt-2 text-[11px] uppercase tracking-wide text-slate-500">
                   via {m.via}
@@ -204,7 +300,6 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
       <form
         className="mt-4 flex gap-2"
         onSubmit={(e) => {

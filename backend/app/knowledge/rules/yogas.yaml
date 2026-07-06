@@ -1,0 +1,30 @@
+# Representative yoga definitions — parallel knowledge catalog.
+# Runtime evaluation remains in engine/yogas.py.
+
+yogas:
+  - name: Gaja Kesari Yoga
+    sanskrit_category: Chandra yoga
+    rule_description: Jupiter in a kendra (1,4,7,10) from the Moon.
+    source: classical Parashari combination; BPHS Chandra yoga section
+
+  - name: Budhaditya Yoga
+    sanskrit_category: Surya yoga
+    rule_description: Mercury conjoined the Sun (within orb), not severely combust.
+    source: classical Parashari combination; BPHS Surya yoga section
+
+  - name: Chandra-Mangala Yoga
+    sanskrit_category: Chandra yoga
+    rule_description: Moon and Mars conjoined in the same sign.
+    source: classical wealth/yoga text tradition
+
+  - name: Kemadruma Yoga
+    sanskrit_category: Chandra dosha
+    rule_description: No planet (except nodes) in the 2nd or 12th from the Moon,
+      with no cancellation by kendra occupancy.
+    source: classical Chandra affliction; cancellation rules per Parashari commentaries
+
+  - name: Kala Sarpa Yoga
+    sanskrit_category: Nabhasa/dosha
+    rule_description: All seven classical planets hemmed between Rahu and Ketu
+      on one side of the nodal axis.
+    source: classical nodal dosha tradition; variant definitions exist

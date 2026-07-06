@@ -143,14 +143,17 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
-                <Button href={`/dashboard/chart/${p.id}`} variant="gold" size="sm">
+                <Button href={`/dashboard/ask/${p.id}`} variant="gold" size="sm">
+                  Instant answers
+                </Button>
+                <Button href={`/dashboard/chart/${p.id}`} size="sm">
                   Chart
                 </Button>
                 <Button href={`/dashboard/predictions/${p.id}`} size="sm" icon={Sparkles}>
                   Predictions
                 </Button>
                 <Button href={`/dashboard/chat/${p.id}`} size="sm" icon={MessageCircleQuestion}>
-                  Ask
+                  LLM chat
                 </Button>
                 <Button href={`/dashboard/rectify/${p.id}`} size="sm" icon={Clock3}>
                   Rectify time

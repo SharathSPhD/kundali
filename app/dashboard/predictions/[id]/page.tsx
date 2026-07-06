@@ -38,44 +38,6 @@ const AREA_ICONS: Record<string, LucideIcon> = {
   family: House,
 };
 
-function ScoreGauge({ score }: { score: number }) {
-  // Semi-circular gauge, 0-100.
-  const r = 36;
-  const circumference = Math.PI * r;
-  const filled = (score / 100) * circumference;
-  const color =
-    score >= 66 ? "stroke-gold-400" : score >= 40 ? "stroke-gold-600" : "stroke-slate-600";
-  return (
-    <svg viewBox="0 0 100 60" className="h-14 w-24" aria-label={`Score ${score}`}>
-      <path
-        d="M 14 52 A 36 36 0 0 1 86 52"
-        fill="none"
-        className="stroke-night-600"
-        strokeWidth={8}
-        strokeLinecap="round"
-      />
-      <path
-        d="M 14 52 A 36 36 0 0 1 86 52"
-        fill="none"
-        className={color}
-        strokeWidth={8}
-        strokeLinecap="round"
-        strokeDasharray={`${filled} ${circumference}`}
-      />
-      <text
-        x={50}
-        y={50}
-        textAnchor="middle"
-        className="fill-slate-100"
-        fontSize={20}
-        fontWeight={700}
-      >
-        {score}
-      </text>
-    </svg>
-  );
-}
-
 function TrendBadge({ trend }: { trend: string }) {
   const t = trend.toLowerCase();
   const rising = ["rising", "up", "improving", "ascending", "positive"].some((k) =>
@@ -100,8 +62,22 @@ function TrendBadge({ trend }: { trend: string }) {
   );
 }
 
+function FavorabilityBadge({ label }: { label: string }) {
+  const lower = label.toLowerCase();
+  const favourable = lower.includes("favourable") || lower.includes("favorable");
+  const mixed = lower === "mixed";
+  const strained = lower.includes("strained");
+  const className = favourable
+    ? "border-gold-600/60 bg-gold-600/10 text-gold-300"
+    : mixed
+      ? "border-amber-700/60 bg-amber-900/20 text-amber-200"
+      : strained
+        ? "border-red-800/60 bg-red-900/20 text-red-300"
+        : "border-night-500 text-slate-300";
+  return <span className={`chip ${className}`}>{label}</span>;
+}
+
 function PredictionCard({ prediction }: { prediction: Prediction }) {
-  const [open, setOpen] = useState(false);
   const AreaIcon = AREA_ICONS[prediction.area.toLowerCase()] ?? Sparkles;
   return (
     <div className="card animate-fade-up p-5 transition-transform hover:-translate-y-0.5">
@@ -111,11 +87,11 @@ function PredictionCard({ prediction }: { prediction: Prediction }) {
             <AreaIcon className="h-4 w-4 shrink-0 text-gold-500" aria-hidden />
             {prediction.area}
           </h3>
-          <div className="mt-2">
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <FavorabilityBadge label={prediction.favorabilityLabel} />
             <TrendBadge trend={prediction.trend} />
           </div>
         </div>
-        <ScoreGauge score={prediction.score} />
       </div>
 
       {prediction.windows.length > 0 && (
@@ -130,25 +106,31 @@ function PredictionCard({ prediction }: { prediction: Prediction }) {
         </div>
       )}
 
-      {prediction.substantiation.length > 0 && (
-        <div className="mt-4">
-          <button
-            className="text-xs font-medium text-gold-400 hover:underline"
-            onClick={() => setOpen((v) => !v)}
-          >
-            {open ? "Hide" : "Show"} substantiation (
-            {prediction.substantiation.length} engine facts)
-          </button>
-          {open && (
-            <ul className="mt-2 space-y-1.5 border-l border-gold-700/40 pl-3">
-              {prediction.substantiation.map((s, i) => (
-                <li key={i} className="text-xs leading-relaxed text-slate-400">
-                  {s}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+      {(prediction.substantiation.length > 0 || prediction.score !== 0) && (
+        <details className="mt-4 group">
+          <summary className="cursor-pointer text-xs font-medium text-gold-400 hover:underline">
+            Why this score?
+          </summary>
+          <div className="mt-2 space-y-2 border-l border-gold-700/40 pl-3">
+            <p className="text-xs text-slate-400">
+              Engine score:{" "}
+              <span className="font-mono text-slate-300">
+                {prediction.score >= 0 ? "+" : ""}
+                {prediction.score.toFixed(2)}
+              </span>{" "}
+              (range −1 to +1)
+            </p>
+            {prediction.substantiation.length > 0 && (
+              <ul className="space-y-1.5">
+                {prediction.substantiation.map((s, i) => (
+                  <li key={i} className="text-xs leading-relaxed text-slate-400">
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </details>
       )}
     </div>
   );

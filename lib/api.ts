@@ -72,7 +72,8 @@ export interface TimeWindow {
 
 export interface Prediction {
   area: string;
-  score: number; // 0-100
+  score: number; // signed [-1, 1] from engine tanh score
+  favorabilityLabel: string;
   trend: string;
   windows: TimeWindow[];
   substantiation: string[];
@@ -114,6 +115,11 @@ export interface Interpretation {
   via: string | null;
   blocked: boolean;
   upgradeHint: string | null;
+  verified: boolean | null;
+  rejectedClaims: unknown[];
+  verificationWarnings: string[];
+  /** Full deterministic engine JSON when returned by /interpret. */
+  enginePayload: Record<string, unknown> | null;
 }
 
 export interface ChatTurn {
@@ -489,10 +495,26 @@ function normalizeWindow(raw: any): TimeWindow {
   };
 }
 
+function favorabilityFromScore(score: number): string {
+  if (score >= 0.5) return "strongly favourable";
+  if (score >= 0.15) return "moderately favourable";
+  if (score > -0.15) return "mixed";
+  if (score > -0.5) return "somewhat strained";
+  return "notably strained";
+}
+
 function normalizePrediction(raw: any): Prediction {
   let score = num(pick(raw, "score", "value", "rating"), 0);
-  if (score > 0 && score <= 1) score = Math.round(score * 100);
-  score = Math.max(0, Math.min(100, Math.round(score)));
+  // Keep signed score — backend returns tanh-squashed [-1, 1].
+  if (Math.abs(score) > 1 && Math.abs(score) <= 100) {
+    score = score / 100;
+  }
+  score = Math.max(-1, Math.min(1, score));
+  const labelRaw = pick(raw, "favorability_label", "favorabilityLabel");
+  const favorabilityLabel =
+    labelRaw !== undefined && labelRaw !== null && String(labelRaw).trim()
+      ? String(labelRaw)
+      : favorabilityFromScore(score);
   const subsRaw = asArray(
     pick(raw, "substantiation", "facts", "evidence", "indications", "trail")
   );
@@ -507,6 +529,7 @@ function normalizePrediction(raw: any): Prediction {
   return {
     area: str(pick(raw, "area", "life_area", "domain", "category"), "general"),
     score,
+    favorabilityLabel,
     trend: str(pick(raw, "trend", "direction"), "steady"),
     windows: asArray(pick(raw, "windows", "time_windows", "periods")).map(
       normalizeWindow
@@ -594,6 +617,20 @@ function normalizeInterpretation(raw: any): Interpretation {
     via: raw?.via ?? null,
     blocked: Boolean(raw?.blocked),
     upgradeHint: raw?.upgrade_hint ?? raw?.upgradeHint ?? null,
+    verified:
+      raw?.verified === true
+        ? true
+        : raw?.verified === false
+          ? false
+          : null,
+    rejectedClaims: asArray(raw?.rejected_claims ?? raw?.rejectedClaims),
+    verificationWarnings: asArray(
+      raw?.verification_warnings ?? raw?.verificationWarnings
+    ).map((w) => (typeof w === "string" ? w : String(w))),
+    enginePayload:
+      raw?.engine_payload ?? raw?.enginePayload
+        ? (raw.engine_payload ?? raw.enginePayload)
+        : null,
   };
 }
 

@@ -1,0 +1,6 @@
+{
+  "label": "aries_10deg",
+  "moon_longitude_microdeg": 10000000,
+  "mahadasha_duration_micro": 120000000,
+  "vargas_to_compute": ["D1", "D2", "D3", "D9", "D10", "D12"]
+}

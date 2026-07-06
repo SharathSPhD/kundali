@@ -1,0 +1,50 @@
+# Area house polarity weights — parallel knowledge catalog (not runtime source).
+# Classical convention: positive weight = house activation supports the area;
+# negative = stresses the area. See predictions.py AREA_HOUSE_POLARITY.
+
+areas:
+  career:
+    source: classical house significations (10th karma, 11th gains, 6th service)
+    houses:
+      10: 1.0
+      11: 0.5
+      6: 0.3
+      8: -0.4
+      12: -0.4
+  wealth:
+    source: classical house significations (2nd dhana, 11th labha, 9th fortune)
+    houses:
+      2: 1.0
+      11: 1.0
+      9: 0.4
+      12: -0.5
+      8: -0.3
+  health:
+    source: classical house significations (1st vitality, 6th disease, 8th chronic)
+    houses:
+      1: 1.0
+      6: -1.0
+      8: -0.8
+      12: -0.4
+  relationships:
+    source: classical house significations (7th partnership, 5th romance)
+    houses:
+      7: 1.0
+      5: 0.4
+      1: 0.3
+      6: -0.4
+      8: -0.4
+  family:
+    source: classical house significations (4th home, 2nd family wealth)
+    houses:
+      4: 1.0
+      2: 0.6
+      9: 0.3
+      8: -0.4
+  education:
+    source: classical house significations (5th intellect, 9th higher learning)
+    houses:
+      5: 1.0
+      9: 0.6
+      4: 0.4
+      2: 0.3

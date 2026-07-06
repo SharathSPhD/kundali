@@ -46,3 +46,7 @@ backend/validation/data/
 # GB10 gateway: real tunnel credentials/config, never the .example template
 gb10-gateway/config.yml
 gb10-gateway/.env
+
+# Lean/Lake build output + downloaded mathlib cache (multi-GB, fetched via
+# `lake exe cache get`; see formal/lean-kundali/README.md).
+formal/lean-kundali/.lake/

@@ -40,10 +40,10 @@ kundali/
         anthropic_provider.py # hosted LLM
     tests/               # pytest; golden case study + convention checks
     Dockerfile, requirements.txt, render.yaml
-  frontend/              # Next.js app; proxies API via route handlers (no CORS)
-    app/ (login, dashboard, chart/[profileId], predictions, chat)
+  app/                   # Next.js 14 (App Router); proxies API via /api/py/* rewrites (no CORS)
+    dashboard/ (profiles, chart/[id], ask/[id], predictions, chat, rectify)
     lib/ (supabase clients, api client, chart geometry)
-    components/ (SouthIndianChart SVG, DashaTimeline, PredictionCards, ChatPanel)
+    components/ (SouthIndianChart SVG, DashaTree, ProfileForm, …)
   supabase/schema.sql    # tables + RLS
   DEPLOYMENT.md, README.md
 ```
@@ -67,7 +67,7 @@ POST /api/dashas       {birth, levels?: 3, from?, to?} → nested dasha tree + c
 POST /api/transits     {birth, on?: date} → gochara table, sade_sati, double_transit
 POST /api/yogas        {birth} → [{name, present, factors, strength}]
 POST /api/ashtakavarga {birth} → BAV per planet + SAV
-POST /api/predictions  {birth, on?: date} → deterministic scored indications per area (career/wealth/health/relationships/family) with substantiation trail
+POST /api/predictions  {birth, on?: date} → deterministic scored indications per area (career/wealth/health/relationships/family/education) with substantiation trail
 POST /api/rectify      {birth, window_minutes, events: [{type, date}]} → ranked candidate times
 POST /api/interpret    {birth, question?, provider?} → narrated reading grounded ONLY in engine JSON (template provider default)
 ```

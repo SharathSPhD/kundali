@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
+from ..engine.scoring_labels import favorability_label
 from .base import InterpretationProvider
 
 _TREND_PHRASE = {
@@ -14,15 +15,7 @@ _TREND_PHRASE = {
 
 
 def _score_phrase(score: float) -> str:
-    if score >= 0.5:
-        return "strongly favourable"
-    if score >= 0.15:
-        return "moderately favourable"
-    if score > -0.15:
-        return "mixed"
-    if score > -0.5:
-        return "somewhat strained"
-    return "notably strained"
+    return favorability_label(score)
 
 
 class TemplateProvider(InterpretationProvider):

@@ -1,0 +1,41 @@
+name: lean-verification
+
+on:
+  push:
+    paths:
+      - "formal/**"
+      - "backend/validation/validate_lean_oracle.py"
+      - "backend/tests/test_lean_oracle_parity.py"
+      - ".github/workflows/lean-verification.yml"
+  pull_request:
+    paths:
+      - "formal/**"
+      - "backend/validation/validate_lean_oracle.py"
+      - "backend/tests/test_lean_oracle_parity.py"
+      - ".github/workflows/lean-verification.yml"
+
+jobs:
+  lean:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: formal/lean-kundali
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install elan
+        run: curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain leanprover/lean4:v4.31.0
+
+      - name: Add elan to PATH
+        run: echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch mathlib cache
+        run: lake exe cache get
+
+      - name: Build Lean project
+        run: lake build
+
+      - name: Oracle parity vs Python engine
+        working-directory: ${{ github.workspace }}
+        run: |
+          python3 backend/validation/validate_lean_oracle.py

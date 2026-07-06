@@ -12,6 +12,7 @@ import math
 from datetime import datetime
 
 from . import constants as K
+from .scoring_labels import favorability_label
 from .ashtakavarga import compute_ashtakavarga, transit_strength
 from .chart import build_chart
 from .dashas import active_path, build_vimshottari
@@ -313,6 +314,7 @@ def predict(birth: BirthData, on_dt: datetime,
             "area": area,
             "score": round(score, 3),
             "raw_score": round(raw, 4),
+            "favorability_label": favorability_label(score),
             "trend": trend,
             "windows": windows,
             "substantiation": subst[area],

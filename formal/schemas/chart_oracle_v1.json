@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "chart_oracle_v1",
+  "description": "Input/output contract for `lake exe oracle` and backend/validation/validate_lean_oracle.py",
+  "type": "object",
+  "required": ["moon_longitude"],
+  "properties": {
+    "label": { "type": "string", "description": "Human-readable test case name" },
+    "moon_longitude": {
+      "type": "number",
+      "description": "Sidereal moon longitude in degrees [0,360)"
+    },
+    "moon_longitude_microdeg": {
+      "type": "integer",
+      "description": "Preferred exact form: degrees * 1_000_000 as integer"
+    },
+    "mahadasha_duration": {
+      "type": "number",
+      "default": 120,
+      "description": "Parent mahadasha span (years) for antardasha sum check"
+    },
+    "vargas_to_compute": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["D1", "D2", "D3", "D9", "D10", "D12"] },
+      "default": ["D1", "D2", "D3", "D9", "D10", "D12"]
+    }
+  },
+  "examples": [
+    {
+      "label": "aries_10deg",
+      "moon_longitude": 10.0,
+      "mahadasha_duration": 120,
+      "vargas_to_compute": ["D1", "D2", "D3", "D9", "D10", "D12"]
+    }
+  ],
+  "output_fields": {
+    "nakshatra_index": "0..26",
+    "pada_index": "0..3",
+    "vimshottari_first_lord": "Ketu|Venus|Sun|Moon|Mars|Rahu|Jupiter|Saturn|Mercury",
+    "vimshottari_balance_years": "rational as float",
+    "antardasha_duration_sum": "should equal mahadasha_duration",
+    "vargas": { "D1": "0..11 sign index", "D9": "0..11" }
+  }
+}
