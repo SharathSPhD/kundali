@@ -183,6 +183,15 @@ export interface ShadbalaRow {
   sufficient: boolean;
 }
 
+export interface AshtakavargaData {
+  /** Bindus per planet across the 12 signs, index 0 = Aries. */
+  bav: Record<string, number[]>;
+  bavTotals: Record<string, number>;
+  /** Sarvashtakavarga: combined bindus per sign, index 0 = Aries. */
+  sav: number[];
+  savTotal: number;
+}
+
 export interface CharaKaraka {
   karaka: string;
   abbr: string; // AK, AmK, BK, MK, PK, GK, DK
@@ -723,6 +732,26 @@ function normalizeShadbala(raw: any): ShadbalaRow[] {
   return rows;
 }
 
+function normalizeAshtakavarga(raw: any): AshtakavargaData {
+  const bavRaw = pick(raw, "bav") ?? {};
+  const bav: Record<string, number[]> = {};
+  for (const [planet, bindus] of Object.entries(bavRaw)) {
+    bav[planet] = asArray(bindus).map((n) => num(n));
+  }
+  const bavTotalsRaw = pick(raw, "bav_totals", "bavTotals") ?? {};
+  const bavTotals: Record<string, number> = {};
+  for (const [planet, total] of Object.entries(bavTotalsRaw)) {
+    bavTotals[planet] = num(total);
+  }
+  const sav = asArray(pick(raw, "sav")).map((n) => num(n));
+  return {
+    bav,
+    bavTotals,
+    sav,
+    savTotal: num(pick(raw, "sav_total", "savTotal"), sav.reduce((a, b) => a + b, 0)),
+  };
+}
+
 function normalizeCharaPeriod(raw: any, level: number, now: Date): CharaPeriod {
   const start = str(pick(raw, "start", "from"));
   const end = str(pick(raw, "end", "to"));
@@ -873,6 +902,10 @@ export async function fetchMatching(
 
 export async function fetchShadbala(birth: BirthData): Promise<ShadbalaRow[]> {
   return normalizeShadbala(await post("shadbala", { birth }));
+}
+
+export async function fetchAshtakavarga(birth: BirthData): Promise<AshtakavargaData> {
+  return normalizeAshtakavarga(await post("ashtakavarga", { birth }));
 }
 
 export async function fetchJaimini(

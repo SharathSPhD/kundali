@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { Anchor, ArrowLeft, KeyRound, Send } from "lucide-react";
+import Button from "@/components/ui/Button";
 import { interpret, type ChatTurn } from "@/lib/api";
 import { getProfile } from "@/lib/profiles";
 import type { BirthProfile } from "@/lib/types";
@@ -98,17 +99,14 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-10rem)] max-w-3xl flex-col">
+    <div className="mx-auto flex h-[calc(100dvh-9rem)] max-w-3xl flex-col sm:h-[calc(100vh-10rem)]">
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="font-display text-2xl font-bold text-slate-100">
           {profile ? `${profile.label} — Ask the chart` : "Ask the chart"}
         </h1>
-        <Link
-          href={`/dashboard/chart/${params.id}`}
-          className="btn-ghost px-3 py-1.5 text-xs"
-        >
-          ← Chart
-        </Link>
+        <Button href={`/dashboard/chart/${params.id}`} size="sm" icon={ArrowLeft}>
+          Chart
+        </Button>
       </div>
 
       <p className="mb-4 rounded-lg border border-night-600/60 bg-night-800/50 px-3 py-2 text-xs text-slate-400">
@@ -158,9 +156,9 @@ export default function ChatPage({ params }: { params: { id: string } }) {
               <p className="whitespace-pre-wrap">{m.content}</p>
               {m.blocked && (
                 <div className="mt-3 flex flex-wrap gap-2 border-t border-night-600/60 pt-2">
-                  <Link href="/dashboard/settings" className="btn-gold px-3 py-1 text-xs">
+                  <Button href="/dashboard/settings" variant="gold" size="sm" icon={KeyRound}>
                     Add an API key
-                  </Link>
+                  </Button>
                   <button
                     className="btn-ghost px-3 py-1 text-xs"
                     onClick={() => {
@@ -185,10 +183,10 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                   {m.citations.map((c, j) => (
                     <span
                       key={j}
-                      className="chip border-gold-700/50 text-[11px] text-gold-300"
+                      className="chip gap-1 border-gold-700/50 text-[11px] text-gold-300"
                       title="Engine fact cited by this answer"
                     >
-                      ⚓ {c}
+                      <Anchor className="h-3 w-3 shrink-0" aria-hidden /> {c}
                     </span>
                   ))}
                 </div>
@@ -225,10 +223,12 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         />
         <button
           type="submit"
-          className="btn-gold"
+          className="btn-gold shrink-0"
           disabled={!profile || busy || !input.trim()}
+          aria-label="Ask"
         >
-          Ask
+          <Send className="h-4 w-4 sm:hidden" aria-hidden />
+          <span className="hidden sm:inline">Ask</span>
         </button>
       </form>
     </div>

@@ -31,7 +31,7 @@ function LoginForm() {
 
   if (!supabaseConfigured) {
     return (
-      <main className="mx-auto max-w-md px-6 py-24 text-center">
+      <main className="mx-auto max-w-md px-6 py-14 text-center sm:py-24">
         <h1 className="font-display text-3xl font-bold text-slate-100">
           Local mode
         </h1>
@@ -115,7 +115,7 @@ function LoginForm() {
   }
 
   return (
-    <main className="mx-auto max-w-md px-6 py-24">
+    <main className="mx-auto max-w-md px-6 py-14 sm:py-24">
       <div className="text-center">
         <Link href="/" className="font-display text-2xl font-bold text-gold-400">
           Kundali
@@ -209,7 +209,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <main className="mx-auto max-w-md px-6 py-24 text-center text-sm text-slate-500">
+        <main className="mx-auto max-w-md px-6 py-14 text-center text-sm text-slate-500 sm:py-24">
           Loading…
         </main>
       }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Heart, Loader2 } from "lucide-react";
 import {
   fetchMatching,
   type MangalDoshaSide,
@@ -229,7 +230,8 @@ export default function MatchingPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-2xl font-bold text-slate-100">
+        <h1 className="flex items-center gap-2 font-display text-2xl font-bold text-slate-100">
+          <Heart className="h-5 w-5 shrink-0 text-gold-400" aria-hidden />
           Kundali matching
         </h1>
         <p className="mt-1 text-sm text-slate-400">
@@ -262,6 +264,7 @@ export default function MatchingPage() {
           onClick={runMatch}
           disabled={!groomBirth || !brideBirth || loading}
         >
+          {loading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
           {loading ? "Matching…" : "Compute match"}
         </button>
         {error && <p className="text-sm text-red-300">{error}</p>}

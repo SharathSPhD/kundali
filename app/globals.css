@@ -18,9 +18,33 @@ body {
   min-height: 100vh;
 }
 
+@layer utilities {
+  /* Subtle entrance used by the Card primitive and swapped tab/varga panels
+     so content doesn't just pop in — kept short (200ms) and GPU-cheap
+     (transform + opacity only) to stay unobtrusive on low-power devices. */
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-fade-up {
+    animation: fade-up 0.25s ease-out both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-up {
+      animation: none;
+    }
+  }
+}
+
 @layer components {
   .card {
-    @apply rounded-xl border border-night-600/50 bg-night-800/70 backdrop-blur-sm;
+    @apply rounded-xl border border-night-600/50 bg-night-800/70 backdrop-blur-sm transition-colors;
   }
   .btn-gold {
     @apply inline-flex items-center justify-center gap-2 rounded-lg bg-gold-500 px-4 py-2 text-sm font-semibold text-night-950 transition hover:bg-gold-400 disabled:cursor-not-allowed disabled:opacity-50;

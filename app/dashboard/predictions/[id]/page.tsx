@@ -1,7 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import {
+  AlertTriangle,
+  Briefcase,
+  Coins,
+  Heart,
+  HeartPulse,
+  House,
+  Sparkles,
+  TrendingDown,
+  TrendingUp,
+  type LucideIcon,
+} from "lucide-react";
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
 import {
   fetchJaimini,
   fetchPredictions,
@@ -17,12 +30,12 @@ import type { BirthProfile } from "@/lib/types";
 import { birthDataOf } from "@/lib/types";
 import { fmtDate, signName } from "@/lib/jyotisha";
 
-const AREA_ICONS: Record<string, string> = {
-  career: "⚙",
-  wealth: "◆",
-  health: "✚",
-  relationships: "♡",
-  family: "⌂",
+const AREA_ICONS: Record<string, LucideIcon> = {
+  career: Briefcase,
+  wealth: Coins,
+  health: HeartPulse,
+  relationships: Heart,
+  family: House,
 };
 
 function ScoreGauge({ score }: { score: number }) {
@@ -71,9 +84,10 @@ function TrendBadge({ trend }: { trend: string }) {
   const falling = ["falling", "down", "declining", "descending", "negative"].some(
     (k) => t.includes(k)
   );
+  const Icon = rising ? TrendingUp : falling ? TrendingDown : null;
   return (
     <span
-      className={`chip ${
+      className={`chip gap-1 ${
         rising
           ? "border-gold-600/60 text-gold-300"
           : falling
@@ -81,21 +95,20 @@ function TrendBadge({ trend }: { trend: string }) {
             : ""
       }`}
     >
-      {rising ? "▲" : falling ? "▼" : "—"} {trend}
+      {Icon && <Icon className="h-3 w-3" aria-hidden />} {trend}
     </span>
   );
 }
 
 function PredictionCard({ prediction }: { prediction: Prediction }) {
   const [open, setOpen] = useState(false);
+  const AreaIcon = AREA_ICONS[prediction.area.toLowerCase()] ?? Sparkles;
   return (
-    <div className="card p-5">
+    <div className="card animate-fade-up p-5 transition-transform hover:-translate-y-0.5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h3 className="font-display text-lg font-semibold capitalize text-slate-100">
-            <span className="mr-2 text-gold-500">
-              {AREA_ICONS[prediction.area.toLowerCase()] ?? "✦"}
-            </span>
+          <h3 className="flex items-center gap-2 font-display text-lg font-semibold capitalize text-slate-100">
+            <AreaIcon className="h-4 w-4 shrink-0 text-gold-500" aria-hidden />
             {prediction.area}
           </h3>
           <div className="mt-2">
@@ -208,12 +221,9 @@ export default function PredictionsPage({
         <h1 className="font-display text-2xl font-bold text-slate-100">
           {profile?.label} — Predictions
         </h1>
-        <Link
-          href={`/dashboard/chart/${params.id}`}
-          className="btn-ghost px-3 py-1.5 text-xs"
-        >
+        <Button href={`/dashboard/chart/${params.id}`} size="sm">
           ← Chart
-        </Link>
+        </Button>
       </div>
 
       <p className="text-xs text-slate-500">
@@ -235,8 +245,9 @@ export default function PredictionsPage({
       {/* Sade Sati banner */}
       {transits?.sadeSati.active && (
         <div className="rounded-xl border border-gold-600/60 bg-gradient-to-r from-gold-600/20 to-night-800 p-4">
-          <p className="font-display text-lg font-semibold text-gold-300">
-            ⚠ Sade Sati is active
+          <p className="flex items-center gap-2 font-display text-lg font-semibold text-gold-300">
+            <AlertTriangle className="h-5 w-5 shrink-0" aria-hidden />
+            Sade Sati is active
             {transits.sadeSati.phase ? ` — ${transits.sadeSati.phase} phase` : ""}
           </p>
           <p className="mt-1 text-sm text-slate-300">

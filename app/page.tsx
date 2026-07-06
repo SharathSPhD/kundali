@@ -1,35 +1,51 @@
 import Link from "next/link";
+import {
+  ArrowRight,
+  Calculator,
+  Grid3x3,
+  MessageCircleQuestion,
+  Moon,
+  Sparkles,
+  Telescope,
+  type LucideIcon,
+} from "lucide-react";
 
-const FEATURES = [
+const FEATURES: Array<{ title: string; body: string; icon: LucideIcon }> = [
   {
     title: "Deterministic engine",
     body: "Swiss Ephemeris sidereal positions (Lahiri), whole-sign houses, dignities, combustion and retrogression — computed, never guessed.",
+    icon: Calculator,
   },
   {
     title: "Shodasha vargas",
     body: "All 16 divisional charts per BPHS — navamsha for dharma and marriage, dashamsha for career, and the rest.",
+    icon: Grid3x3,
   },
   {
     title: "Vimshottari dashas",
     body: "Full maha → antar → pratyantar tree with the active path highlighted and exact dates.",
+    icon: Moon,
   },
   {
     title: "Gochara & Sade Sati",
     body: "Moon-reference transits, Sade Sati phases, Jupiter–Saturn double-transit detection.",
+    icon: Telescope,
   },
   {
     title: "Grounded predictions",
     body: "Scored indications per life area with a full substantiation trail back to engine facts.",
+    icon: Sparkles,
   },
   {
     title: "Ask your chart",
     body: "A chat that answers only from the computed chart — every claim cites a dasha, transit or yoga.",
+    icon: MessageCircleQuestion,
   },
 ];
 
 export default function LandingPage() {
   return (
-    <main className="mx-auto max-w-5xl px-6 py-20">
+    <main className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-20">
       <div className="text-center">
         <p className="mb-4 text-sm uppercase tracking-[0.3em] text-gold-500">
           ॐ · Jyotisha, computed
@@ -43,20 +59,31 @@ export default function LandingPage() {
           statement traceable to a deterministic calculation. Narration is
           grounded strictly in engine output, never invented.
         </p>
-        <div className="mt-10 flex items-center justify-center gap-4">
-          <Link href="/dashboard" className="btn-gold px-6 py-3 text-base">
-            Open dashboard →
+        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <Link
+            href="/dashboard"
+            className="btn-gold w-full px-6 py-3 text-base sm:w-auto"
+          >
+            Open dashboard <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
-          <Link href="/login" className="btn-ghost px-6 py-3 text-base">
+          <Link
+            href="/login"
+            className="btn-ghost w-full px-6 py-3 text-base sm:w-auto"
+          >
             Sign in
           </Link>
         </div>
       </div>
 
       <div className="mt-24 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {FEATURES.map((f) => (
-          <div key={f.title} className="card p-6 shadow-glow">
-            <h3 className="font-display text-lg font-semibold text-gold-300">
+        {FEATURES.map((f, i) => (
+          <div
+            key={f.title}
+            className="card animate-fade-up p-6 shadow-glow transition-transform hover:-translate-y-0.5"
+            style={{ animationDelay: `${i * 60}ms` }}
+          >
+            <f.icon className="h-6 w-6 text-gold-500" aria-hidden />
+            <h3 className="mt-3 font-display text-lg font-semibold text-gold-300">
               {f.title}
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-slate-400">

@@ -2,16 +2,23 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { MessageCircleQuestion, Sparkles, Grid3x3 } from "lucide-react";
 import SouthIndianChart, {
   type SignPlacement,
 } from "@/components/SouthIndianChart";
 import DashaTree from "@/components/DashaTree";
+import AshtakavargaTable from "@/components/AshtakavargaTable";
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import Tabs from "@/components/ui/Tabs";
 import {
+  fetchAshtakavarga,
   fetchChart,
   fetchDashas,
   fetchPanchanga,
   fetchShadbala,
   fetchVargas,
+  type AshtakavargaData,
   type ChartData,
   type DashaPeriod,
   type PanchangaData,
@@ -27,6 +34,8 @@ import {
   fmtDegMin,
   signName,
 } from "@/lib/jyotisha";
+
+const QUICK_VARGAS = ["D1", "D9", "D10"] as const;
 
 function chartToPlacements(chart: ChartData): SignPlacement[] {
   const map = new Map<number, SignPlacement>();
@@ -55,6 +64,7 @@ export default function ChartPage({ params }: { params: { id: string } }) {
   const [dashas, setDashas] = useState<DashaPeriod[]>([]);
   const [panchanga, setPanchanga] = useState<PanchangaData | null>(null);
   const [shadbala, setShadbala] = useState<ShadbalaRow[]>([]);
+  const [ashtakavarga, setAshtakavarga] = useState<AshtakavargaData | null>(null);
   const [selectedVarga, setSelectedVarga] = useState("D1");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,13 +84,14 @@ export default function ChartPage({ params }: { params: { id: string } }) {
         if (cancelled) return;
         setProfile(p);
         const birth = birthDataOf(p);
-        const [chartRes, vargasRes, dashasRes, panchangaRes, shadbalaRes] =
+        const [chartRes, vargasRes, dashasRes, panchangaRes, shadbalaRes, ashtakavargaRes] =
           await Promise.allSettled([
             fetchChart(birth),
             fetchVargas(birth, [...ALL_VARGAS]),
             fetchDashas(birth, 3),
             fetchPanchanga(birth),
             fetchShadbala(birth),
+            fetchAshtakavarga(birth),
           ]);
         if (cancelled) return;
         if (chartRes.status === "fulfilled") setChart(chartRes.value);
@@ -89,6 +100,7 @@ export default function ChartPage({ params }: { params: { id: string } }) {
         if (dashasRes.status === "fulfilled") setDashas(dashasRes.value);
         if (panchangaRes.status === "fulfilled") setPanchanga(panchangaRes.value);
         if (shadbalaRes.status === "fulfilled") setShadbala(shadbalaRes.value);
+        if (ashtakavargaRes.status === "fulfilled") setAshtakavarga(ashtakavargaRes.value);
       } catch (err) {
         if (!cancelled)
           setError(err instanceof Error ? err.message : "Failed to load.");
@@ -168,19 +180,13 @@ export default function ChartPage({ params }: { params: { id: string } }) {
             </p>
           )}
         </div>
-        <div className="flex gap-2">
-          <Link
-            href={`/dashboard/predictions/${params.id}`}
-            className="btn-ghost px-3 py-1.5 text-xs"
-          >
-            Predictions →
-          </Link>
-          <Link
-            href={`/dashboard/chat/${params.id}`}
-            className="btn-ghost px-3 py-1.5 text-xs"
-          >
-            Ask the chart →
-          </Link>
+        <div className="flex flex-wrap gap-2">
+          <Button href={`/dashboard/predictions/${params.id}`} size="sm" icon={Sparkles}>
+            Predictions
+          </Button>
+          <Button href={`/dashboard/chat/${params.id}`} size="sm" icon={MessageCircleQuestion}>
+            Ask the chart
+          </Button>
         </div>
       </div>
 
@@ -188,19 +194,7 @@ export default function ChartPage({ params }: { params: { id: string } }) {
         {/* Chart + varga selector */}
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
-            {["D1", "D9", "D10"].map((v) => (
-              <button
-                key={v}
-                onClick={() => setSelectedVarga(v)}
-                className={
-                  selectedVarga === v
-                    ? "btn-gold px-3 py-1.5 text-xs"
-                    : "btn-ghost px-3 py-1.5 text-xs"
-                }
-              >
-                {v}
-              </button>
-            ))}
+            <Tabs options={QUICK_VARGAS} value={selectedVarga as (typeof QUICK_VARGAS)[number]} onChange={setSelectedVarga} />
             <select
               className="input w-auto py-1.5 text-xs"
               value={selectedVarga}
@@ -418,6 +412,17 @@ export default function ChartPage({ params }: { params: { id: string } }) {
             rupa. Tick marks the required minimum.
           </p>
         </div>
+      )}
+
+      {/* Ashtakavarga */}
+      {ashtakavarga && (
+        <Card
+          icon={Grid3x3}
+          title="Aṣṭakavarga"
+          subtitle="Bindus per graha per sign (BAV), plus the combined Sarvāṣṭakavarga (SAV) row — ≥28 SAV or ≥5 BAV is classically strong for a transit."
+        >
+          <AshtakavargaTable data={ashtakavarga} />
+        </Card>
       )}
 
       {/* Dasha tree */}

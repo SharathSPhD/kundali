@@ -1,8 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import {
+  Clock3,
+  MessageCircleQuestion,
+  Pencil,
+  Plus,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 import ProfileForm from "@/components/ProfileForm";
+import Button from "@/components/ui/Button";
 import {
   deleteProfile,
   listProfiles,
@@ -55,9 +63,9 @@ export default function DashboardPage() {
           Birth profiles
         </h1>
         {!showForm && (
-          <button className="btn-gold" onClick={() => setCreating(true)}>
-            + New profile
-          </button>
+          <Button variant="gold" icon={Plus} onClick={() => setCreating(true)}>
+            New profile
+          </Button>
         )}
       </div>
 
@@ -85,14 +93,19 @@ export default function DashboardPage() {
           <p className="text-slate-400">
             No birth profiles yet. Add one to compute a chart.
           </p>
-          <button className="btn-gold mt-4" onClick={() => setCreating(true)}>
+          <Button
+            variant="gold"
+            icon={Plus}
+            className="mt-4"
+            onClick={() => setCreating(true)}
+          >
             Create your first profile
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {profiles.map((p) => (
-            <div key={p.id} className="card p-5">
+            <div key={p.id} className="card animate-fade-up p-5">
               <div className="flex items-start justify-between">
                 <div>
                   <h2 className="font-display text-lg font-semibold text-slate-100">
@@ -130,32 +143,21 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
-                <Link
-                  href={`/dashboard/chart/${p.id}`}
-                  className="btn-gold px-3 py-1.5 text-xs"
-                >
+                <Button href={`/dashboard/chart/${p.id}`} variant="gold" size="sm">
                   Chart
-                </Link>
-                <Link
-                  href={`/dashboard/predictions/${p.id}`}
-                  className="btn-ghost px-3 py-1.5 text-xs"
-                >
+                </Button>
+                <Button href={`/dashboard/predictions/${p.id}`} size="sm" icon={Sparkles}>
                   Predictions
-                </Link>
-                <Link
-                  href={`/dashboard/chat/${p.id}`}
-                  className="btn-ghost px-3 py-1.5 text-xs"
-                >
+                </Button>
+                <Button href={`/dashboard/chat/${p.id}`} size="sm" icon={MessageCircleQuestion}>
                   Ask
-                </Link>
-                <Link
-                  href={`/dashboard/rectify/${p.id}`}
-                  className="btn-ghost px-3 py-1.5 text-xs"
-                >
+                </Button>
+                <Button href={`/dashboard/rectify/${p.id}`} size="sm" icon={Clock3}>
                   Rectify time
-                </Link>
-                <button
-                  className="btn-ghost px-3 py-1.5 text-xs"
+                </Button>
+                <Button
+                  size="sm"
+                  icon={Pencil}
                   onClick={() => {
                     setCreating(false);
                     setEditing(p);
@@ -163,13 +165,15 @@ export default function DashboardPage() {
                   }}
                 >
                   Edit
-                </button>
-                <button
-                  className="btn-ghost px-3 py-1.5 text-xs text-red-400 hover:border-red-800"
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  icon={Trash2}
                   onClick={() => handleDelete(p)}
                 >
                   Delete
-                </button>
+                </Button>
               </div>
             </div>
           ))}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { KeyRound, ShieldCheck } from "lucide-react";
 import {
   LLM_PROVIDERS,
   deleteCredential,
@@ -205,8 +206,9 @@ export default function SettingsPage() {
       )}
 
       {tier && (
-        <div className="card p-5">
-          <h2 className="mb-1 font-display text-lg font-semibold text-gold-300">
+        <div className="card animate-fade-up p-5">
+          <h2 className="mb-1 flex items-center gap-2 font-display text-lg font-semibold text-gold-300">
+            <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden />
             Tier: <span className="capitalize">{TIER_COPY[tier].label}</span>
           </h2>
           <p className="text-sm text-slate-400">{TIER_COPY[tier].desc}</p>
@@ -214,9 +216,10 @@ export default function SettingsPage() {
       )}
 
       {supabaseConfigured && (
-        <div className="card space-y-4 p-5">
+        <div className="card animate-fade-up space-y-4 p-5">
           <div>
-            <h2 className="font-display text-lg font-semibold text-gold-300">
+            <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-gold-300">
+              <KeyRound className="h-4 w-4 shrink-0" aria-hidden />
               Bring your own key
             </h2>
             <p className="mt-1 text-xs text-slate-500">

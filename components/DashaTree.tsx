@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import type { DashaPeriod } from "@/lib/api";
 import { fmtDate } from "@/lib/jyotisha";
 
@@ -23,9 +24,15 @@ function DashaNode({ node }: { node: DashaPeriod }) {
         } ${hasChildren ? "cursor-pointer" : "cursor-default"}`}
       >
         {hasChildren ? (
-          <span className="w-3 text-xs text-slate-500">{open ? "▾" : "▸"}</span>
+          <span className="w-3 shrink-0 text-slate-500">
+            {open ? (
+              <ChevronDown className="h-3 w-3" aria-hidden />
+            ) : (
+              <ChevronRight className="h-3 w-3" aria-hidden />
+            )}
+          </span>
         ) : (
-          <span className="w-3" />
+          <span className="w-3 shrink-0" />
         )}
         <span className={`font-semibold ${node.active ? "text-gold-300" : ""}`}>
           {node.lord}

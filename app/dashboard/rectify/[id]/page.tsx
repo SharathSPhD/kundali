@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Clock3 } from "lucide-react";
 import {
   fetchRectification,
   type RectificationCandidate,
@@ -52,7 +53,7 @@ function CandidateCard({
   const matchedEvents = candidate.events.filter((e) => e.matched.length > 0);
   return (
     <div
-      className={`card p-5 ${
+      className={`card animate-fade-up p-5 ${
         rank === 0 ? "border-gold-500/70 bg-gold-600/5" : ""
       }`}
     >
@@ -245,7 +246,8 @@ export default function RectifyPage({ params }: { params: { id: string } }) {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h1 className="font-display text-2xl font-bold text-slate-100">
+        <h1 className="flex items-center gap-2 font-display text-2xl font-bold text-slate-100">
+          <Clock3 className="h-5 w-5 shrink-0 text-gold-400" aria-hidden />
           {profile.label} — Birth-time rectification
         </h1>
         <Link href="/dashboard" className="btn-ghost px-3 py-1.5 text-xs">

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Search, Users } from "lucide-react";
+import Button from "@/components/ui/Button";
 import {
   ACCOUNT_TIERS,
   adminLookupUserByEmail,
@@ -66,16 +67,17 @@ export default function AdminPage() {
         <p className="text-sm text-red-300">
           This page is restricted to admin accounts.
         </p>
-        <Link href="/dashboard" className="btn-ghost mt-4 inline-block px-3 py-1.5 text-xs">
+        <Button href="/dashboard" size="sm" className="mt-4 inline-flex">
           ← Back to profiles
-        </Link>
+        </Button>
       </div>
     );
   }
 
   return (
     <div className="max-w-xl space-y-6">
-      <h1 className="font-display text-2xl font-bold text-slate-100">
+      <h1 className="flex items-center gap-2 font-display text-2xl font-bold text-slate-100">
+        <Users className="h-5 w-5 shrink-0 text-gold-400" aria-hidden />
         Manage users
       </h1>
       <p className="text-xs text-slate-500">
@@ -103,6 +105,7 @@ export default function AdminPage() {
             onClick={lookup}
             disabled={looking || !email.trim()}
           >
+            <Search className="h-3.5 w-3.5 shrink-0" aria-hidden />
             {looking ? "Looking up…" : "Look up"}
           </button>
         </div>

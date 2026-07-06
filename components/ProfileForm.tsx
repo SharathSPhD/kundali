@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Plus, X } from "lucide-react";
 import type {
   BirthProfile,
   BirthProfileInput,
@@ -205,7 +206,7 @@ export default function ProfileForm({ initial, onSave, onCancel }: Props) {
           </span>
           <button
             type="button"
-            className="btn-ghost px-2 py-1 text-xs"
+            className="btn-ghost flex items-center gap-1 px-2 py-1 text-xs"
             onClick={() =>
               setEvents((evs) => [
                 ...evs,
@@ -213,7 +214,8 @@ export default function ProfileForm({ initial, onSave, onCancel }: Props) {
               ])
             }
           >
-            + Add event
+            <Plus className="h-3.5 w-3.5" aria-hidden />
+            Add event
           </button>
         </div>
         <div className="space-y-2">
@@ -260,7 +262,7 @@ export default function ProfileForm({ initial, onSave, onCancel }: Props) {
                 }
                 aria-label="Remove event"
               >
-                ✕
+                <X className="h-3.5 w-3.5" aria-hidden />
               </button>
             </div>
           ))}
