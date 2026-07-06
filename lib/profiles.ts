@@ -83,6 +83,7 @@ export async function saveProfile(
     lat: input.lat,
     lon: input.lon,
     is_self: input.is_self,
+    rectified_time: input.rectified_time ?? null,
   };
 
   let profileId = input.id;
@@ -123,6 +124,29 @@ export async function saveProfile(
 
   const saved = await getProfile(profileId!);
   if (!saved) throw new Error("Profile save failed.");
+  return saved;
+}
+
+/** Set (or clear, with `time = null`) the rectified birth time on a profile
+ * without touching any other field — used by the birth-time rectification
+ * flow (`/dashboard/rectify/[id]`). */
+export async function setRectifiedTime(
+  id: string,
+  time: string | null
+): Promise<BirthProfile> {
+  const supabase = createClient();
+  if (!supabase) {
+    const existing = getLocalProfile(id);
+    if (!existing) throw new Error("Profile not found.");
+    return saveLocalProfile({ ...existing, rectified_time: time });
+  }
+  const { error } = await supabase
+    .from("birth_profiles")
+    .update({ rectified_time: time })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  const saved = await getProfile(id);
+  if (!saved) throw new Error("Profile not found after update.");
   return saved;
 }
 

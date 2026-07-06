@@ -73,6 +73,14 @@ export default function ProfileForm({ initial, onSave, onCancel }: Props) {
         lat: latN,
         lon: lonN,
         is_self: isSelf,
+        // Rectification is a separate flow (/dashboard/rectify/[id]); a
+        // routine profile edit here must not clobber an existing result.
+        // If the raw birth time changes, the old rectification no longer
+        // applies to it, so it's cleared rather than silently carried over.
+        rectified_time:
+          initial && birthTime === initial.birth_time
+            ? initial.rectified_time
+            : null,
         events: events.filter((ev) => ev.event_date),
       });
     } catch (err) {

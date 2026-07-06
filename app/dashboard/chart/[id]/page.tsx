@@ -155,6 +155,18 @@ export default function ChartPage({ params }: { params: { id: string } }) {
               {chart.lagna.pada ? ` pada ${chart.lagna.pada}` : ""}
             </p>
           )}
+          {profile?.rectified_time && (
+            <p className="mt-1 text-xs text-gold-400">
+              Using rectified time {profile.rectified_time.slice(0, 5)} (recorded:{" "}
+              {profile.birth_time}) —{" "}
+              <Link
+                href={`/dashboard/rectify/${params.id}`}
+                className="underline hover:text-gold-300"
+              >
+                review
+              </Link>
+            </p>
+          )}
         </div>
         <div className="flex gap-2">
           <Link

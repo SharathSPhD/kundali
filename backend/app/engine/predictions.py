@@ -16,6 +16,7 @@ from .ashtakavarga import compute_ashtakavarga, transit_strength
 from .chart import build_chart
 from .dashas import active_path, build_vimshottari
 from .ephemeris import BirthData, EngineConfig
+from .jaimini import compute_jaimini
 from .shadbala import compute_shadbala
 from .transits import compute_transits
 from .vargas import d9 as _navamsa_sign, d10 as _dashamsa_sign
@@ -152,6 +153,7 @@ def predict(birth: BirthData, on_dt: datetime,
     transits = compute_transits(chart, on_utc, config)
     av = compute_ashtakavarga(chart)
     shadbala = compute_shadbala(birth, config, chart=chart)
+    jaimini = compute_jaimini(chart, birth.local_datetime(), config, on=on_dt)
 
     scores = {a: 0.0 for a in AREAS}
     subst = {a: [] for a in AREAS}
@@ -203,6 +205,36 @@ def predict(birth: BirthData, on_dt: datetime,
         subst["career"].append({
             "type": "varga_dignity", "varga": "D10", "planet": tenth_lord,
             "role": "10th lord", "dignity": dig, "delta": delta,
+        })
+
+    # --- Jaimini chara-dasha corroboration (K.N. Rao school) -------------
+    # A small, cited delta (+/-0.1) when the currently-active Jaimini chara
+    # dasha sign IS the house whose classical significations it should
+    # activate (7th=relationships, 10th=career, 2nd/11th=wealth), i.e. the
+    # Rashi (sign-based) dasha system agrees with the Vimshottari (nakshatra
+    # -based) dasha lords already scored above. Absence of the sign in the
+    # active path is not penalised (it is a corroboration bonus, not an
+    # independent claim).
+    lagna_sign = chart["lagna"]["sign"]
+    darakaraka = next(k["planet"] for k in jaimini["karakas"] if k["karaka"] == "Darakaraka")
+    active_chara_signs = {node["sign"] for node in jaimini["active"]}
+    _CHARA_HOUSE_AREA = {7: "relationships", 10: "career", 2: "wealth", 11: "wealth"}
+    for house, area in _CHARA_HOUSE_AREA.items():
+        house_sign = (lagna_sign + house - 1) % 12
+        if house_sign in active_chara_signs:
+            scores[area] += 0.1
+            subst[area].append({
+                "type": "jaimini_chara_dasha_corroboration", "house": house,
+                "sign": K.SIGN_NAMES[house_sign], "delta": 0.1,
+                "note": f"active chara dasha sign is the {house}th house from lagna",
+            })
+    darakaraka_sign = chart["planets"][darakaraka]["sign"]
+    if darakaraka_sign in active_chara_signs:
+        scores["relationships"] += 0.1
+        subst["relationships"].append({
+            "type": "jaimini_chara_dasha_corroboration", "karaka": "Darakaraka",
+            "planet": darakaraka, "sign": K.SIGN_NAMES[darakaraka_sign], "delta": 0.1,
+            "note": "active chara dasha sign is the Darakaraka's (spouse significator) sign",
         })
 
     # --- transit modulation ----------------------------------------------
@@ -299,5 +331,19 @@ def predict(birth: BirthData, on_dt: datetime,
             "sade_sati": ss,
             "double_transit": transits["double_transit"],
             "active_yogas": [y["name"] for y in yogas if y["present"]],
+        },
+        # Full six-fold strength (Raman conventions) and Jaimini karakas +
+        # K.N. Rao Chara Dasha, exposed in full (not just used internally
+        # for the dasha-lord weighting above) so the interpretation layer
+        # can ground Shadbala/Jaimini-specific questions ("is Jupiter
+        # strong enough to give results?", "what does my chara dasha say?")
+        # in real computed facts instead of declining to answer or, worse,
+        # inventing numbers.
+        "shadbala": shadbala,
+        "jaimini": jaimini,
+        "chart": {
+            "lagna": chart["lagna"],
+            "planets": chart["planets"],
+            "house_lords": chart["house_lords"],
         },
     }

@@ -39,3 +39,6 @@ venv/
 
 # TS incremental build cache
 *.tsbuildinfo
+
+# Downloaded validation datasets (fetched on demand, see VALIDATION.md)
+backend/validation/data/

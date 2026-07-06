@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import LocalModeBanner from "@/components/LocalModeBanner";
 import { createClient, supabaseConfigured } from "@/lib/supabase/client";
+import { getMyTier, type AccountTier } from "@/lib/account";
 
 export default function DashboardLayout({
   children,
@@ -11,6 +13,17 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const [tier, setTier] = useState<AccountTier | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getMyTier().then((t) => {
+      if (!cancelled) setTier(t);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function signOut() {
     const supabase = createClient();
@@ -45,6 +58,20 @@ export default function DashboardLayout({
             >
               Matching
             </Link>
+            <Link
+              href="/dashboard/settings"
+              className="text-slate-400 transition hover:text-gold-300"
+            >
+              Settings
+            </Link>
+            {tier === "admin" && (
+              <Link
+                href="/dashboard/admin"
+                className="text-slate-400 transition hover:text-gold-300"
+              >
+                Admin
+              </Link>
+            )}
             {supabaseConfigured ? (
               <button
                 onClick={signOut}

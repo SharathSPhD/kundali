@@ -120,20 +120,28 @@ def _verify_token(token: str) -> dict:
 
 
 async def require_user(request: Request) -> dict:
-    """FastAPI dependency: returns JWT claims (or a stub when disabled)."""
+    """FastAPI dependency: returns JWT claims (or a stub when disabled).
+
+    The raw bearer token is included as `claims["token"]` so downstream code
+    (see `interpretation/gateway.py`) can forward it to Supabase REST and get
+    RLS-scoped results for exactly this user — no service-role key needed to
+    resolve a user's own tier/credentials.
+    """
     if _auth_disabled():
-        return {"sub": "dev-user", "role": "authenticated", "auth": "disabled"}
+        return {"sub": "dev-user", "role": "authenticated", "auth": "disabled", "token": None}
 
     auth = request.headers.get("Authorization", "")
     if not auth.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing bearer token")
     token = auth.removeprefix("Bearer ").strip()
     try:
-        return _verify_token(token)
+        claims = _verify_token(token)
     except HTTPException:
         raise
     except Exception as exc:  # noqa: BLE001 — any decode error is a 401
         raise HTTPException(status_code=401, detail=f"Invalid token: {exc}") from exc
+    claims["token"] = token
+    return claims
 
 
 UserDep = Depends(require_user)

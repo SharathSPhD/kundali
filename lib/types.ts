@@ -13,6 +13,21 @@ export const LIFE_EVENT_TYPES = [
 
 export type LifeEventType = (typeof LIFE_EVENT_TYPES)[number];
 
+/** Maps the app's life-event categories to the engine's rectification
+ * event-type keys (`backend/app/engine/rectification.py::EVENT_RULES`),
+ * which drive which house lords / karakas are checked as "relevant" for
+ * that event at each candidate birth time. */
+export const RECTIFICATION_EVENT_TYPE: Record<LifeEventType, string> = {
+  marriage: "marriage",
+  child_birth: "childbirth",
+  career_start: "career",
+  promotion: "career",
+  relocation: "relocation",
+  parent_death: "parent_death",
+  health_event: "health",
+  other: "other",
+};
+
 export interface LifeEvent {
   id?: string;
   event_type: LifeEventType;
@@ -45,10 +60,13 @@ export interface BirthData {
   tz_offset: number;
 }
 
+/** Uses the rectified birth time (from event-based rectification) when the
+ * profile has one — every chart/dasha/prediction/chat call should read the
+ * best-known birth time, not always the as-recorded one. */
 export function birthDataOf(p: BirthProfile): BirthData {
   return {
     date: p.birth_date,
-    time: p.birth_time,
+    time: p.rectified_time || p.birth_time,
     lat: p.lat,
     lon: p.lon,
     tz_offset: p.tz_offset,

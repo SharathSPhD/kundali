@@ -54,3 +54,33 @@ def test_varga_corroboration_facts(result):
     for f in vf:
         assert f["delta"] == 0.1
         assert abs(f["delta"]) <= 0.1  # deltas stay small and cited
+
+
+def test_payload_exposes_shadbala_and_jaimini(result):
+    """The interpretation layer needs the full Shadbala + Jaimini data, not
+    just the internal dasha-lord-weighting use of it, to ground
+    Shadbala/Jaimini-specific questions."""
+    assert "shadbala" in result and "planets" in result["shadbala"]
+    classical = {"Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"}
+    assert classical <= result["shadbala"]["planets"].keys()
+    for planet in classical:
+        row = result["shadbala"]["planets"][planet]
+        assert "total_rupas" in row and "required_rupas" in row and "ratio" in row
+
+    assert "jaimini" in result
+    assert len(result["jaimini"]["karakas"]) == 7
+    assert {k["karaka"] for k in result["jaimini"]["karakas"]} == {
+        "Atmakaraka", "Amatyakaraka", "Bhratrikaraka", "Matrikaraka",
+        "Putrakaraka", "Gnatikaraka", "Darakaraka"}
+    assert result["jaimini"]["chara_dasha"]["periods"]
+    assert "chart" in result and "planets" in result["chart"] and "house_lords" in result["chart"]
+
+
+def test_jaimini_chara_dasha_corroboration_facts_are_cited(result):
+    """When present, Jaimini corroboration facts must stay small (+/-0.1,
+    matching the varga-corroboration convention) and cite their source."""
+    facts = [f for a in result["areas"] for f in a["substantiation"]
+             if f.get("type") == "jaimini_chara_dasha_corroboration"]
+    for f in facts:
+        assert f["delta"] == 0.1
+        assert "note" in f and f["note"]

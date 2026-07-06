@@ -29,7 +29,8 @@ class TemplateProvider(InterpretationProvider):
     name = "template"
 
     def interpret(self, engine_payload: dict[str, Any],
-                  question: Optional[str] = None) -> dict:
+                  question: Optional[str] = None,
+                  history: Optional[list[dict]] = None) -> dict:
         paragraphs = []
         citations = []
 

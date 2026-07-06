@@ -102,7 +102,20 @@ export default function DashboardPage() {
                     )}
                   </h2>
                   <p className="mt-1 text-sm text-slate-400">
-                    {fmtDate(p.birth_date)} · {p.birth_time} (UTC
+                    {fmtDate(p.birth_date)} ·{" "}
+                    {p.rectified_time ? (
+                      <>
+                        <span className="text-slate-600 line-through">
+                          {p.birth_time}
+                        </span>{" "}
+                        <span className="font-semibold text-gold-300">
+                          {p.rectified_time.slice(0, 5)} (rectified)
+                        </span>
+                      </>
+                    ) : (
+                      p.birth_time
+                    )}{" "}
+                    (UTC
                     {p.tz_offset >= 0 ? "+" : ""}
                     {p.tz_offset})
                   </p>
@@ -134,6 +147,12 @@ export default function DashboardPage() {
                   className="btn-ghost px-3 py-1.5 text-xs"
                 >
                   Ask
+                </Link>
+                <Link
+                  href={`/dashboard/rectify/${p.id}`}
+                  className="btn-ghost px-3 py-1.5 text-xs"
+                >
+                  Rectify time
                 </Link>
                 <button
                   className="btn-ghost px-3 py-1.5 text-xs"

@@ -202,6 +202,43 @@ export interface JaiminiData {
   activeAntar: CharaPeriod | null;
 }
 
+export interface RectificationEventMatch {
+  event: string;
+  date: string;
+  activeMahadasha: string | null;
+  activeAntardasha: string | null;
+  relevantLords: string[];
+  whyRelevant: string[];
+  matched: string[];
+  score: number;
+}
+
+export interface RectificationCandidate {
+  time: string; // HH:MM:SS
+  date: string;
+  offsetMinutes: number;
+  score: number;
+  maxScore: number;
+  lagnaSign: number; // 1-12
+  lagnaSignName: string;
+  lagnaDegree: number;
+  events: RectificationEventMatch[];
+}
+
+export interface RectificationResult {
+  inputTime: string;
+  windowMinutes: number;
+  stepMinutes: number;
+  nCandidates: number;
+  candidates: RectificationCandidate[];
+}
+
+export interface RectificationEventInput {
+  type: string;
+  date: string;
+  note?: string;
+}
+
 // ---------------------------------------------------------------------------
 // Low-level fetch through the proxy
 // ---------------------------------------------------------------------------
@@ -729,6 +766,43 @@ function normalizeJaimini(raw: any): JaiminiData {
   };
 }
 
+function normalizeRectificationCandidate(raw: any): RectificationCandidate {
+  return {
+    time: str(pick(raw, "time")),
+    date: str(pick(raw, "date")),
+    offsetMinutes: num(pick(raw, "offset_minutes", "offsetMinutes")),
+    score: num(pick(raw, "score")),
+    maxScore: num(pick(raw, "max_score", "maxScore"), 1),
+    lagnaSign: signNumber(pick(raw, "lagna_sign_name", "lagna_sign")),
+    lagnaSignName: str(pick(raw, "lagna_sign_name", "lagnaSignName")),
+    lagnaDegree: num(pick(raw, "lagna_degree", "lagnaDegree")),
+    events: asArray(pick(raw, "events")).map(
+      (e: any): RectificationEventMatch => ({
+        event: str(pick(e, "event", "type")),
+        date: str(pick(e, "date")),
+        activeMahadasha: str(pick(e, "active_mahadasha"), null as any),
+        activeAntardasha: str(pick(e, "active_antardasha"), null as any),
+        relevantLords: asArray(pick(e, "relevant_lords")).map((l) => str(l)),
+        whyRelevant: asArray(pick(e, "why_relevant")).map((w) => str(w)),
+        matched: asArray(pick(e, "matched")).map((m) => str(m)),
+        score: num(pick(e, "score")),
+      })
+    ),
+  };
+}
+
+function normalizeRectification(raw: any): RectificationResult {
+  return {
+    inputTime: str(pick(raw, "input_time", "inputTime")),
+    windowMinutes: num(pick(raw, "window_minutes", "windowMinutes")),
+    stepMinutes: num(pick(raw, "step_minutes", "stepMinutes")),
+    nCandidates: num(pick(raw, "n_candidates", "nCandidates")),
+    candidates: asArray(pick(raw, "candidates")).map(
+      normalizeRectificationCandidate
+    ),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -789,6 +863,22 @@ export async function fetchJaimini(
   on?: string
 ): Promise<JaiminiData> {
   return normalizeJaimini(await post("jaimini", { birth, on }));
+}
+
+export async function fetchRectification(
+  birth: BirthData,
+  windowMinutes: number,
+  events: RectificationEventInput[],
+  stepMinutes = 2
+): Promise<RectificationResult> {
+  return normalizeRectification(
+    await post("rectify", {
+      birth,
+      window_minutes: windowMinutes,
+      step_minutes: stepMinutes,
+      events,
+    })
+  );
 }
 
 export async function interpret(

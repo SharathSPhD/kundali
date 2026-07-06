@@ -80,10 +80,31 @@ birth_profiles(id, user_id → auth.users, label, birth_date, birth_time, tz_off
 life_events(id, profile_id, event_type, event_date, note)
 readings(id, profile_id, kind, payload jsonb, created_at)   -- cached engine output
 chat_messages(id, profile_id, role, content, grounding jsonb, created_at)
+
+-- account tiers + BYOK (see "LLM access tiers" below)
+user_tiers(user_id → auth.users, tier enum[basic|paid|guest|admin], added_by, created_at, updated_at)
+user_llm_credentials(id, user_id → auth.users, provider enum[anthropic|openai|gemini|ollama],
+                      api_key, base_url, created_at, updated_at)  -- unique(user_id, provider)
 ```
+`user_tiers` gets a default `basic` row via an `on auth.users insert` trigger. Admin tier
+changes for *other* users go through `security definer` RPCs (`admin_lookup_tier_by_email`,
+`admin_set_tier_by_email`) that self-check the caller's own tier — this sidesteps the
+self-referential-RLS-recursion problem of a normal admin-all policy needing to read the very
+table its own policy is protecting.
+
+## LLM access tiers + BYOK
+Four tiers, resolved per-request by `backend/app/interpretation/gateway.py::resolve_provider()`
+(never inside the MCP server — see the plugin section):
+1. **BYOK** (any tier): a `user_llm_credentials` row exists for the requested/any provider → use it directly.
+2. **admin / guest** (no BYOK needed): routed to the GB10-hosted Ollama gateway with a trusted server-to-server secret (`GB10_INTERNAL_SECRET`).
+3. **paid** (no BYOK needed): routed to the same GB10 gateway with a stored app-level secret (`GB10_PAID_SECRET`).
+4. **basic**, no BYOK: blocked — the resolver raises `ProviderBlocked` with an upgrade/BYOK hint rather than silently answering.
+
+The resolver fetches the caller's *own* tier/credentials by forwarding their bearer token to
+Supabase REST — RLS naturally scopes results to that user, so no service-role key is needed here.
 
 ## LLM grounding contract
-Providers receive: engine JSON + user question. Prompt forbids inventing positions/dates; every claim must cite an element of the payload (dasha period, transit, yoga). The deterministic `template_provider` is default so the app is fully functional with zero LLM.
+Providers receive: engine JSON + user question (+ optional multi-turn `history`). Prompt forbids inventing positions/dates; every claim must cite an element of the payload (dasha period, transit, yoga, shadbala, jaimini). The deterministic `template_provider` is default so the app is fully functional with zero LLM.
 
 ## Deployment
 1. Supabase project → run `supabase/schema.sql`; copy URL + anon key.
