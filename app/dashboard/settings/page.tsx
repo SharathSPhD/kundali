@@ -29,7 +29,7 @@ const TIER_COPY: Record<AccountTier, { label: string; desc: string }> = {
   },
   basic: {
     label: "Basic",
-    desc: "No inference included yet — add your own API key below to enable chat, or ask an admin to upgrade your tier.",
+    desc: "Chat and Ask always work with deterministic, cited answers from the engine — no key needed. Add your own API key below (or ask an admin to upgrade your tier) to unlock free-form LLM narrative chat too.",
   },
 };
 
