@@ -118,16 +118,30 @@ class RectifyRequest(BaseModel):
     config: Optional[EngineConfigModel] = None
 
 
+class ChatTurn(BaseModel):
+    """One prior Q&A pair, oldest-first, for lightweight multi-turn context."""
+    question: str
+    answer: str
+
+
 class InterpretRequest(BaseModel):
     birth: BirthDataModel
     question: Optional[str] = None
-    provider: Optional[str] = Field(default="template")
+    # None = tier/BYOK auto-resolution (see interpretation/gateway.py);
+    # "template" = always-on deterministic narration, no gating, no LLM.
+    # Any other explicit name (anthropic/openai/gemini/ollama) restricts
+    # auto-resolution to that provider's BYOK credential only.
+    provider: Optional[str] = None
+    history: Optional[list[ChatTurn]] = None
     on: Optional[str] = None
     config: Optional[EngineConfigModel] = None
 
 
 class InterpretResponse(BaseModel):
     text: str
-    citations: list[str]
+    citations: list[str] = []
     provider: str
+    via: Optional[str] = None
+    blocked: bool = False
+    upgrade_hint: Optional[str] = None
     engine_payload: Optional[dict[str, Any]] = None

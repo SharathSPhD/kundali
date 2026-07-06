@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { interpret } from "@/lib/api";
+import { interpret, type ChatTurn } from "@/lib/api";
 import { getProfile } from "@/lib/profiles";
 import type { BirthProfile } from "@/lib/types";
 import { birthDataOf } from "@/lib/types";
@@ -11,6 +11,9 @@ interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   citations?: string[];
+  via?: string | null;
+  blocked?: boolean;
+  upgradeHint?: string | null;
 }
 
 const SUGGESTIONS = [
@@ -19,6 +22,10 @@ const SUGGESTIONS = [
   "Which yogas are active in my chart?",
   "What should I know about the current transits?",
 ];
+
+// How many prior turns to send back as context — enough for coherent
+// follow-ups without unbounded payload growth.
+const HISTORY_WINDOW = 6;
 
 export default function ChatPage({ params }: { params: { id: string } }) {
   const [profile, setProfile] = useState<BirthProfile | null>(null);
@@ -43,21 +50,37 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, busy]);
 
-  async function send(question: string) {
+  function historyForRequest(): ChatTurn[] {
+    const turns: ChatTurn[] = [];
+    for (let i = 0; i < messages.length - 1; i++) {
+      if (messages[i].role === "user" && messages[i + 1]?.role === "assistant") {
+        turns.push({ question: messages[i].content, answer: messages[i + 1].content });
+      }
+    }
+    return turns.slice(-HISTORY_WINDOW);
+  }
+
+  async function send(question: string, provider?: string) {
     const q = question.trim();
     if (!q || !profile || busy) return;
     setInput("");
     setError(null);
+    const history = historyForRequest();
     setMessages((m) => [...m, { role: "user", content: q }]);
     setBusy(true);
     try {
-      const res = await interpret(birthDataOf(profile), q);
+      const res = await interpret(birthDataOf(profile), q, provider, history);
       setMessages((m) => [
         ...m,
         {
           role: "assistant",
-          content: res.text || "(empty response)",
+          content: res.blocked
+            ? res.upgradeHint || "No inference is available for your account yet."
+            : res.text || "(empty response)",
           citations: res.citations,
+          via: res.via,
+          blocked: res.blocked,
+          upgradeHint: res.upgradeHint,
         },
       ]);
     } catch (err) {
@@ -89,9 +112,10 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       </div>
 
       <p className="mb-4 rounded-lg border border-night-600/60 bg-night-800/50 px-3 py-2 text-xs text-slate-400">
-        Answers are grounded strictly in your computed chart — daśās, transits
-        and yogas from the deterministic engine. Every claim cites the engine
-        fact it rests on; nothing is invented.
+        Answers are grounded strictly in your computed chart — daśās,
+        transits, yogas, Shadbala strength and Jaimini Chara Daśā from the
+        deterministic engine. Every claim cites the engine fact it rests
+        on; nothing is invented.
       </p>
 
       {error && <p className="mb-4 text-sm text-red-300">{error}</p>}
@@ -126,10 +150,36 @@ export default function ChatPage({ params }: { params: { id: string } }) {
               className={`max-w-[85%] rounded-xl px-4 py-3 text-sm leading-relaxed ${
                 m.role === "user"
                   ? "bg-gold-600/20 text-gold-100"
-                  : "bg-night-700/60 text-slate-200"
+                  : m.blocked
+                    ? "border border-gold-700/50 bg-night-800/80 text-slate-300"
+                    : "bg-night-700/60 text-slate-200"
               }`}
             >
               <p className="whitespace-pre-wrap">{m.content}</p>
+              {m.blocked && (
+                <div className="mt-3 flex flex-wrap gap-2 border-t border-night-600/60 pt-2">
+                  <Link href="/dashboard/settings" className="btn-gold px-3 py-1 text-xs">
+                    Add an API key
+                  </Link>
+                  <button
+                    className="btn-ghost px-3 py-1 text-xs"
+                    onClick={() => {
+                      const lastQuestion = [...messages]
+                        .slice(0, i)
+                        .reverse()
+                        .find((mm) => mm.role === "user");
+                      if (lastQuestion) send(lastQuestion.content, "template");
+                    }}
+                  >
+                    Use deterministic summary instead
+                  </button>
+                </div>
+              )}
+              {m.via && !m.blocked && (
+                <p className="mt-2 text-[11px] uppercase tracking-wide text-slate-500">
+                  via {m.via}
+                </p>
+              )}
               {m.citations && m.citations.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1.5 border-t border-night-600/60 pt-2">
                   {m.citations.map((c, j) => (

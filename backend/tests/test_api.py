@@ -92,6 +92,37 @@ def test_interpret_template():
     assert data["citations"]
 
 
+def test_interpret_defaults_to_blocked_without_byok_or_tier():
+    # AUTH_DISABLED=1 -> token is None -> tier resolves to "basic" with no
+    # BYOK possible, so auto-resolution (no explicit provider) must fail
+    # safe: a clear blocked response, not a 500 or a silent template answer.
+    r = client.post("/api/interpret", json={"birth": BIRTH})
+    assert r.status_code == 200
+    data = r.json()
+    assert data["blocked"] is True
+    assert data["provider"] == "blocked"
+    assert data["upgrade_hint"]
+    assert data["engine_payload"] is not None
+
+
+def test_interpret_requested_provider_without_byok_is_blocked():
+    r = client.post("/api/interpret", json={"birth": BIRTH, "provider": "anthropic"})
+    assert r.status_code == 200
+    assert r.json()["blocked"] is True
+
+
+def test_interpret_template_bypasses_tier_gating_and_ignores_history():
+    r = client.post("/api/interpret", json={
+        "birth": BIRTH,
+        "provider": "template",
+        "history": [{"question": "How's my career?", "answer": "Steady."}],
+    })
+    assert r.status_code == 200
+    data = r.json()
+    assert data["blocked"] is False
+    assert data["via"] == "template"
+
+
 def test_rectify():
     r = client.post("/api/rectify", json={
         "birth": BIRTH,

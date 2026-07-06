@@ -109,6 +109,16 @@ export interface Yoga {
 export interface Interpretation {
   text: string;
   citations: string[];
+  provider: string;
+  /** Human-readable resolved path, e.g. "your Anthropic key" or "Kundali (GB10)". */
+  via: string | null;
+  blocked: boolean;
+  upgradeHint: string | null;
+}
+
+export interface ChatTurn {
+  question: string;
+  answer: string;
 }
 
 export interface PanchangaData {
@@ -568,7 +578,14 @@ function normalizeInterpretation(raw: any): Interpretation {
         ? c
         : str(pick(c, "text", "label", "fact", "id"), JSON.stringify(c))
   );
-  return { text, citations };
+  return {
+    text,
+    citations,
+    provider: str(pick(raw, "provider"), "template"),
+    via: raw?.via ?? null,
+    blocked: Boolean(raw?.blocked),
+    upgradeHint: raw?.upgrade_hint ?? raw?.upgradeHint ?? null,
+  };
 }
 
 function normalizePanchanga(raw: any): PanchangaData {
@@ -884,9 +901,10 @@ export async function fetchRectification(
 export async function interpret(
   birth: BirthData,
   question: string,
-  provider?: string
+  provider?: string,
+  history?: ChatTurn[]
 ): Promise<Interpretation> {
   return normalizeInterpretation(
-    await post("interpret", { birth, question, provider })
+    await post("interpret", { birth, question, provider, history })
   );
 }
