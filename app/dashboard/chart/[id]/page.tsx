@@ -26,6 +26,7 @@ import {
   type VargaChart,
 } from "@/lib/api";
 import { getProfile } from "@/lib/profiles";
+import { getLatestReading, saveReading } from "@/lib/readings";
 import type { BirthProfile } from "@/lib/types";
 import { birthDataOf } from "@/lib/types";
 import {
@@ -36,6 +37,19 @@ import {
 } from "@/lib/jyotisha";
 
 const QUICK_VARGAS = ["D1", "D9", "D10"] as const;
+
+interface ChartReadingCache {
+  chart: ChartData | null;
+  vargas: VargaChart[];
+  dashas: DashaPeriod[];
+  panchanga: PanchangaData | null;
+  shadbala: ShadbalaRow[];
+  ashtakavarga: AshtakavargaData | null;
+}
+
+function isChartReadingCache(v: unknown): v is ChartReadingCache {
+  return !!v && typeof v === "object" && "chart" in v;
+}
 
 function chartToPlacements(chart: ChartData): SignPlacement[] {
   const map = new Map<number, SignPlacement>();
@@ -83,6 +97,21 @@ export default function ChartPage({ params }: { params: { id: string } }) {
         }
         if (cancelled) return;
         setProfile(p);
+
+        // Instant-hydrate from the last cached reading (if any) so the page
+        // isn't blank while the live computation round-trips; overwritten
+        // below once the fresh engine data lands.
+        const cached = await getLatestReading(p.id, "chart");
+        if (!cancelled && isChartReadingCache(cached)) {
+          setChart(cached.chart);
+          setVargas(cached.vargas ?? []);
+          setDashas(cached.dashas ?? []);
+          setPanchanga(cached.panchanga ?? null);
+          setShadbala(cached.shadbala ?? []);
+          setAshtakavarga(cached.ashtakavarga ?? null);
+          setLoading(false);
+        }
+
         const birth = birthDataOf(p);
         const [chartRes, vargasRes, dashasRes, panchangaRes, shadbalaRes, ashtakavargaRes] =
           await Promise.allSettled([
@@ -94,13 +123,23 @@ export default function ChartPage({ params }: { params: { id: string } }) {
             fetchAshtakavarga(birth),
           ]);
         if (cancelled) return;
+        const fresh: ChartReadingCache = {
+          chart: chartRes.status === "fulfilled" ? chartRes.value : null,
+          vargas: vargasRes.status === "fulfilled" ? vargasRes.value : [],
+          dashas: dashasRes.status === "fulfilled" ? dashasRes.value : [],
+          panchanga: panchangaRes.status === "fulfilled" ? panchangaRes.value : null,
+          shadbala: shadbalaRes.status === "fulfilled" ? shadbalaRes.value : [],
+          ashtakavarga:
+            ashtakavargaRes.status === "fulfilled" ? ashtakavargaRes.value : null,
+        };
         if (chartRes.status === "fulfilled") setChart(chartRes.value);
-        else setError(chartRes.reason?.message ?? "Chart computation failed.");
+        else if (!cached) setError(chartRes.reason?.message ?? "Chart computation failed.");
         if (vargasRes.status === "fulfilled") setVargas(vargasRes.value);
         if (dashasRes.status === "fulfilled") setDashas(dashasRes.value);
         if (panchangaRes.status === "fulfilled") setPanchanga(panchangaRes.value);
         if (shadbalaRes.status === "fulfilled") setShadbala(shadbalaRes.value);
         if (ashtakavargaRes.status === "fulfilled") setAshtakavarga(ashtakavargaRes.value);
+        if (chartRes.status === "fulfilled") void saveReading(p.id, "chart", fresh);
       } catch (err) {
         if (!cancelled)
           setError(err instanceof Error ? err.message : "Failed to load.");

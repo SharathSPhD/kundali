@@ -70,3 +70,31 @@ def test_career_answer_cites_area(engine_payload):
 def test_areas_have_favorability_label(engine_payload):
     for area in engine_payload["areas"]:
         assert area.get("favorability_label")
+
+
+def test_yoga_answer_grounds_known_yoga_with_registry_source():
+    payload = {
+        "context": {"active_yogas": ["Gaja Kesari Yoga"]},
+        "areas": [],
+        "dasha_path": [],
+    }
+    packet = build_answer_packet("yogas", payload, "which yogas are active?")
+    assert "Gaja Kesari Yoga" in packet["text"]
+    assert "Jupiter in a kendra" in packet["text"]
+    assert any("Gaja Kesari Yoga —" in c for c in packet["citations"])
+
+
+def test_yoga_answer_handles_unknown_yoga_gracefully():
+    payload = {
+        "context": {"active_yogas": ["Some Unregistered Yoga"]},
+        "areas": [],
+        "dasha_path": [],
+    }
+    packet = build_answer_packet("yogas", payload, "which yogas are active?")
+    assert "Some Unregistered Yoga" in packet["text"]
+    assert any(c == "yoga: Some Unregistered Yoga" for c in packet["citations"])
+
+
+def test_career_answer_cites_registry_house_source(engine_payload):
+    packet = build_answer_packet("career", engine_payload, "career?")
+    assert any("classical house significations" in c for c in packet["citations"])

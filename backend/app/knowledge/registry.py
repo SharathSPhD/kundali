@@ -7,6 +7,7 @@ claim verification context, and future formalization work.
 """
 from __future__ import annotations
 
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -51,8 +52,14 @@ _VALIDATORS = {
 }
 
 
+@lru_cache(maxsize=None)
 def load_rules(name: str) -> dict | list:
-    """Load and validate a named rules file from ``rules/<name>.yaml``."""
+    """Load and validate a named rules file from ``rules/<name>.yaml``.
+
+    Cached: these files are read-only at runtime and re-parsed on every call
+    otherwise (this is invoked per-request from the answer-packet/claim
+    grounding path below).
+    """
     path = _RULES_DIR / f"{name}.yaml"
     if not path.exists():
         raise FileNotFoundError(f"rules file not found: {path}")
@@ -62,3 +69,38 @@ def load_rules(name: str) -> dict | list:
     if validator:
         validator(data)
     return data
+
+
+@lru_cache(maxsize=None)
+def _yoga_catalog() -> dict[str, dict[str, Any]]:
+    try:
+        data = load_rules("yogas")
+    except FileNotFoundError:
+        return {}
+    return {entry["name"]: entry for entry in data.get("yogas", [])}
+
+
+def yoga_info(name: str) -> dict[str, Any] | None:
+    """Look up a yoga's rule description + textual provenance by name.
+
+    Matches loosely (case-insensitive, ignoring a trailing "Yoga"/"Dosha")
+    since engine-reported yoga names don't always match the catalog's
+    canonical title casing exactly.
+    """
+    catalog = _yoga_catalog()
+    if name in catalog:
+        return catalog[name]
+    key = name.strip().lower()
+    for cname, entry in catalog.items():
+        if cname.strip().lower() == key:
+            return entry
+    return None
+
+
+def area_info(area: str) -> dict[str, Any] | None:
+    """Look up an area's governing houses + textual provenance by name."""
+    try:
+        data = load_rules("area_house_polarity")
+    except FileNotFoundError:
+        return None
+    return (data.get("areas") or {}).get(area)

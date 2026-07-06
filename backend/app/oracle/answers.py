@@ -5,6 +5,7 @@ from typing import Any
 
 from ..engine.scoring_labels import favorability_label
 from ..interpretation.template_provider import _TREND_PHRASE
+from ..knowledge.registry import area_info, yoga_info
 
 _AREA_INTENTS = frozenset({
     "health", "wealth", "career", "relationships", "family", "education",
@@ -101,7 +102,13 @@ def build_answer_packet(intent: str, engine_payload: dict, question: str) -> dic
         yg = engine_payload.get("context", {}).get("active_yogas") or []
         if yg:
             parts.append("Active natal yogas in this chart: " + ", ".join(yg) + ".")
-            citations.extend(f"yoga: {y}" for y in yg)
+            for y in yg:
+                info = yoga_info(y)
+                if info:
+                    parts.append(f"{y}: {info['rule_description']} (source: {info['source']}).")
+                    citations.append(f"yoga: {y} — {info['source']}")
+                else:
+                    citations.append(f"yoga: {y}")
         else:
             parts.append("No evaluated yogas are presently active in this chart.")
 
@@ -117,8 +124,12 @@ def build_answer_packet(intent: str, engine_payload: dict, question: str) -> dic
             )
             if fact_txt:
                 parts.append(f"Key engine facts: {fact_txt}.")
+            info = area_info(intent)
+            if info:
+                parts.append(f"Governing houses per {info['source']}.")
             citations.append(
                 f"area: {area['area']} score {area['score']:+.2f} trend {area['trend']}"
+                + (f" — {info['source']}" if info else "")
             )
         else:
             parts.append(f"No {intent} area data is available in the engine payload.")

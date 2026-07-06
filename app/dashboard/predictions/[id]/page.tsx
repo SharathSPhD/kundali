@@ -26,9 +26,21 @@ import {
   type Yoga,
 } from "@/lib/api";
 import { getProfile } from "@/lib/profiles";
+import { getLatestReading, saveReading } from "@/lib/readings";
 import type { BirthProfile } from "@/lib/types";
 import { birthDataOf } from "@/lib/types";
 import { fmtDate, signName } from "@/lib/jyotisha";
+
+interface PredictionsReadingCache {
+  predictions: Prediction[];
+  transits: TransitData | null;
+  yogas: Yoga[];
+  jaimini: JaiminiData | null;
+}
+
+function isPredictionsReadingCache(v: unknown): v is PredictionsReadingCache {
+  return !!v && typeof v === "object" && "predictions" in v;
+}
 
 const AREA_ICONS: Record<string, LucideIcon> = {
   career: Briefcase,
@@ -164,6 +176,16 @@ export default function PredictionsPage({
         }
         if (cancelled) return;
         setProfile(p);
+
+        const cached = await getLatestReading(p.id, "predictions");
+        if (!cancelled && isPredictionsReadingCache(cached)) {
+          setPredictions(cached.predictions ?? []);
+          setTransits(cached.transits ?? null);
+          setYogas(cached.yogas ?? []);
+          setJaimini(cached.jaimini ?? null);
+          setLoading(false);
+        }
+
         const birth = birthDataOf(p);
         const [predRes, transitRes, yogaRes, jaiminiRes] =
           await Promise.allSettled([
@@ -174,10 +196,18 @@ export default function PredictionsPage({
           ]);
         if (cancelled) return;
         if (predRes.status === "fulfilled") setPredictions(predRes.value);
-        else setError(predRes.reason?.message ?? "Prediction engine failed.");
+        else if (!cached)
+          setError(predRes.reason?.message ?? "Prediction engine failed.");
         if (transitRes.status === "fulfilled") setTransits(transitRes.value);
         if (yogaRes.status === "fulfilled") setYogas(yogaRes.value);
         if (jaiminiRes.status === "fulfilled") setJaimini(jaiminiRes.value);
+        if (predRes.status === "fulfilled")
+          void saveReading(p.id, "predictions", {
+            predictions: predRes.value,
+            transits: transitRes.status === "fulfilled" ? transitRes.value : null,
+            yogas: yogaRes.status === "fulfilled" ? yogaRes.value : [],
+            jaimini: jaiminiRes.status === "fulfilled" ? jaiminiRes.value : null,
+          } satisfies PredictionsReadingCache);
       } catch (err) {
         if (!cancelled)
           setError(err instanceof Error ? err.message : "Failed to load.");

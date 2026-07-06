@@ -196,8 +196,10 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       <p className="mb-4 rounded-lg border border-night-600/60 bg-night-800/50 px-3 py-2 text-xs text-slate-400">
         Answers are grounded strictly in your computed chart — daśās,
         transits, yogas, Shadbala strength and Jaimini Chara Daśā from the
-        deterministic engine. Every claim cites the engine fact it rests
-        on; nothing is invented.
+        deterministic engine. Deterministic and Q&A answers only ever state
+        computed facts, with citations. LLM narrative answers are instructed
+        to do the same and are checked against the engine afterward — look
+        for the verified badge below an answer.
       </p>
 
       {error && <p className="mb-4 text-sm text-red-300">{error}</p>}
@@ -252,7 +254,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                       if (lastQuestion) send(lastQuestion.content, "template");
                     }}
                   >
-                    Use deterministic summary instead
+                    Use deterministic Q&amp;A instead
                   </button>
                 </div>
               )}

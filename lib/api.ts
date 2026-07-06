@@ -230,12 +230,22 @@ export interface JaiminiData {
 export interface RectificationEventMatch {
   event: string;
   date: string;
+  canonicalType: string;
+  generic: boolean;
   activeMahadasha: string | null;
   activeAntardasha: string | null;
+  activePratyantardasha: string | null;
   relevantLords: string[];
   whyRelevant: string[];
   matched: string[];
   score: number;
+  maxScore: number;
+}
+
+export interface VargaSensitivity {
+  nearD9Boundary: boolean;
+  nearD10Boundary: boolean;
+  proximityMinutes: number;
 }
 
 export interface RectificationCandidate {
@@ -248,6 +258,12 @@ export interface RectificationCandidate {
   lagnaSignName: string;
   lagnaDegree: number;
   events: RectificationEventMatch[];
+  vargaSensitivity: VargaSensitivity;
+}
+
+export interface RectificationSensitivity {
+  likelyChangesTop: boolean;
+  note: string;
 }
 
 export interface RectificationResult {
@@ -256,6 +272,11 @@ export interface RectificationResult {
   stepMinutes: number;
   nCandidates: number;
   candidates: RectificationCandidate[];
+  warnings: string[];
+  ignoredEventCount: number;
+  confidence: number;
+  tieCount: number;
+  sensitivityToStep: RectificationSensitivity;
 }
 
 export interface RectificationEventInput {
@@ -850,6 +871,7 @@ function normalizeJaimini(raw: any): JaiminiData {
 }
 
 function normalizeRectificationCandidate(raw: any): RectificationCandidate {
+  const vs = pick(raw, "varga_sensitivity", "vargaSensitivity") ?? {};
   return {
     time: str(pick(raw, "time")),
     date: str(pick(raw, "date")),
@@ -859,22 +881,32 @@ function normalizeRectificationCandidate(raw: any): RectificationCandidate {
     lagnaSign: signNumber(pick(raw, "lagna_sign_name", "lagna_sign")),
     lagnaSignName: str(pick(raw, "lagna_sign_name", "lagnaSignName")),
     lagnaDegree: num(pick(raw, "lagna_degree", "lagnaDegree")),
+    vargaSensitivity: {
+      nearD9Boundary: bool(pick(vs, "near_d9_boundary", "nearD9Boundary")),
+      nearD10Boundary: bool(pick(vs, "near_d10_boundary", "nearD10Boundary")),
+      proximityMinutes: num(pick(vs, "proximity_minutes", "proximityMinutes")),
+    },
     events: asArray(pick(raw, "events")).map(
       (e: any): RectificationEventMatch => ({
         event: str(pick(e, "event", "type")),
         date: str(pick(e, "date")),
+        canonicalType: str(pick(e, "canonical_type", "canonicalType")),
+        generic: bool(pick(e, "generic")),
         activeMahadasha: str(pick(e, "active_mahadasha"), null as any),
         activeAntardasha: str(pick(e, "active_antardasha"), null as any),
+        activePratyantardasha: str(pick(e, "active_pratyantardasha"), null as any),
         relevantLords: asArray(pick(e, "relevant_lords")).map((l) => str(l)),
         whyRelevant: asArray(pick(e, "why_relevant")).map((w) => str(w)),
         matched: asArray(pick(e, "matched")).map((m) => str(m)),
         score: num(pick(e, "score")),
+        maxScore: num(pick(e, "max_score", "maxScore"), 1),
       })
     ),
   };
 }
 
 function normalizeRectification(raw: any): RectificationResult {
+  const sens = pick(raw, "sensitivity_to_step", "sensitivityToStep") ?? {};
   return {
     inputTime: str(pick(raw, "input_time", "inputTime")),
     windowMinutes: num(pick(raw, "window_minutes", "windowMinutes")),
@@ -883,6 +915,14 @@ function normalizeRectification(raw: any): RectificationResult {
     candidates: asArray(pick(raw, "candidates")).map(
       normalizeRectificationCandidate
     ),
+    warnings: asArray(pick(raw, "warnings")).map((w) => str(w)),
+    ignoredEventCount: num(pick(raw, "ignored_event_count", "ignoredEventCount")),
+    confidence: num(pick(raw, "confidence")),
+    tieCount: num(pick(raw, "tie_count", "tieCount")),
+    sensitivityToStep: {
+      likelyChangesTop: bool(pick(sens, "likely_changes_top", "likelyChangesTop")),
+      note: str(pick(sens, "note")),
+    },
   };
 }
 

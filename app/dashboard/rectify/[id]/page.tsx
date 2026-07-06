@@ -51,6 +51,8 @@ function CandidateCard({
 }) {
   const [open, setOpen] = useState(false);
   const matchedEvents = candidate.events.filter((e) => e.matched.length > 0);
+  const vs = candidate.vargaSensitivity;
+  const vargaFlagged = vs?.nearD9Boundary || vs?.nearD10Boundary;
   return (
     <div
       className={`card animate-fade-up p-5 ${
@@ -67,6 +69,20 @@ function CandidateCard({
             {isApplied && (
               <span className="chip ml-2 border-gold-600/60 text-gold-300">
                 applied
+              </span>
+            )}
+            {vargaFlagged && (
+              <span
+                className="chip ml-2 border-amber-700/60 text-amber-300"
+                title={`Within ${vs.proximityMinutes} min of a ${
+                  vs.nearD9Boundary && vs.nearD10Boundary
+                    ? "D9/D10"
+                    : vs.nearD9Boundary
+                      ? "D9 (navamsa)"
+                      : "D10 (dashamsa)"
+                } lagna-sign boundary — small timing errors could flip the divisional chart here.`}
+              >
+                near varga boundary
               </span>
             )}
           </p>
@@ -113,8 +129,17 @@ function CandidateCard({
                   <span className="font-semibold text-slate-300">
                     {e.event}
                   </span>{" "}
+                  {e.generic && (
+                    <span
+                      className="chip mr-1 border-amber-700/60 py-0 text-[10px] text-amber-300"
+                      title="Unrecognized event type — scored generically, low-signal"
+                    >
+                      generic
+                    </span>
+                  )}
                   ({e.date}) — active {e.activeMahadasha ?? "?"}
-                  {e.activeAntardasha ? `-${e.activeAntardasha}` : ""} dasha.{" "}
+                  {e.activeAntardasha ? `-${e.activeAntardasha}` : ""}
+                  {e.activePratyantardasha ? `-${e.activePratyantardasha}` : ""} dasha.{" "}
                   {e.matched.length > 0 ? (
                     <span className="text-gold-400">
                       {e.matched.join("; ")}
@@ -378,6 +403,45 @@ export default function RectifyPage({ params }: { params: { id: string } }) {
 
       {result && (
         <div className="space-y-4">
+          {result.warnings.length > 0 && (
+            <div className="rounded-lg border border-amber-700/50 bg-amber-950/20 px-3 py-2 text-xs text-amber-300">
+              <p className="font-semibold">
+                {result.ignoredEventCount} event
+                {result.ignoredEventCount === 1 ? "" : "s"} scored generically:
+              </p>
+              <ul className="mt-1 list-inside list-disc space-y-0.5">
+                {result.warnings.map((w, i) => (
+                  <li key={i}>{w}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+            <span>
+              Confidence:{" "}
+              <span
+                className={
+                  result.confidence >= 0.5
+                    ? "font-semibold text-emerald-400"
+                    : result.confidence >= 0.2
+                      ? "font-semibold text-amber-400"
+                      : "font-semibold text-red-400"
+                }
+              >
+                {(result.confidence * 100).toFixed(0)}%
+              </span>
+            </span>
+            {result.tieCount > 1 && (
+              <span className="chip border-amber-700/60 text-amber-300">
+                {result.tieCount} candidates tied at the top score
+              </span>
+            )}
+            {result.sensitivityToStep.likelyChangesTop && (
+              <span title={result.sensitivityToStep.note} className="chip border-amber-700/60 text-amber-300">
+                sensitive to step size
+              </span>
+            )}
+          </div>
           <h2 className="font-display text-lg font-semibold text-slate-100">
             {result.candidates.length} ranked candidate
             {result.candidates.length === 1 ? "" : "s"}
