@@ -18,7 +18,7 @@ def test_byok_wins_over_tier(monkeypatch):
     monkeypatch.setattr(gateway, "get_user_credential",
                          lambda token, name: {"api_key": "sk-test", "base_url": None}
                          if name == "anthropic" else None)
-    monkeypatch.setattr(gateway, "get_user_tier", lambda token: "basic")
+    monkeypatch.setattr(gateway, "get_user_tier", lambda token, user_id: "basic")
 
     provider, via = gateway.resolve_provider(_user())
 
@@ -29,7 +29,7 @@ def test_byok_wins_over_tier(monkeypatch):
 
 def test_admin_tier_uses_gb10_gateway_without_byok(monkeypatch):
     monkeypatch.setattr(gateway, "get_user_credential", lambda token, name: None)
-    monkeypatch.setattr(gateway, "get_user_tier", lambda token: "admin")
+    monkeypatch.setattr(gateway, "get_user_tier", lambda token, user_id: "admin")
     monkeypatch.setenv("OLLAMA_GATEWAY_URL", "https://gb10.example.com")
     monkeypatch.setenv("GB10_INTERNAL_SECRET", "internal-secret")
 
@@ -43,7 +43,7 @@ def test_admin_tier_uses_gb10_gateway_without_byok(monkeypatch):
 
 def test_paid_tier_uses_gb10_gateway_with_stored_secret(monkeypatch):
     monkeypatch.setattr(gateway, "get_user_credential", lambda token, name: None)
-    monkeypatch.setattr(gateway, "get_user_tier", lambda token: "paid")
+    monkeypatch.setattr(gateway, "get_user_tier", lambda token, user_id: "paid")
     monkeypatch.setenv("OLLAMA_GATEWAY_URL", "https://gb10.example.com")
     monkeypatch.setenv("GB10_PAID_SECRET", "paid-secret")
 
@@ -55,7 +55,7 @@ def test_paid_tier_uses_gb10_gateway_with_stored_secret(monkeypatch):
 
 def test_basic_tier_no_byok_no_gateway_is_blocked(monkeypatch):
     monkeypatch.setattr(gateway, "get_user_credential", lambda token, name: None)
-    monkeypatch.setattr(gateway, "get_user_tier", lambda token: "basic")
+    monkeypatch.setattr(gateway, "get_user_tier", lambda token, user_id: "basic")
     monkeypatch.delenv("OLLAMA_GATEWAY_URL", raising=False)
 
     with pytest.raises(gateway.ProviderBlocked):
@@ -64,7 +64,7 @@ def test_basic_tier_no_byok_no_gateway_is_blocked(monkeypatch):
 
 def test_admin_tier_without_gateway_url_configured_is_blocked(monkeypatch):
     monkeypatch.setattr(gateway, "get_user_credential", lambda token, name: None)
-    monkeypatch.setattr(gateway, "get_user_tier", lambda token: "admin")
+    monkeypatch.setattr(gateway, "get_user_tier", lambda token, user_id: "admin")
     monkeypatch.delenv("OLLAMA_GATEWAY_URL", raising=False)
 
     with pytest.raises(gateway.ProviderBlocked):
@@ -79,9 +79,39 @@ def test_requested_provider_restricts_byok_lookup_to_that_provider(monkeypatch):
         return None
 
     monkeypatch.setattr(gateway, "get_user_credential", fake_cred)
-    monkeypatch.setattr(gateway, "get_user_tier", lambda token: "basic")
+    monkeypatch.setattr(gateway, "get_user_tier", lambda token, user_id: "basic")
 
     with pytest.raises(gateway.ProviderBlocked):
         gateway.resolve_provider(_user(), requested_provider="openai")
 
     assert seen == ["openai"]
+
+
+def test_get_user_tier_filters_rest_query_by_own_user_id(monkeypatch):
+    """`user_tiers` has a permissive admin-all-rows RLS policy alongside the
+    owner-only select policy; since Postgres OR-combines permissive
+    policies, an admin caller who queries without a `user_id` filter would
+    get every row in the table back (see supabase/schema.sql). Guard against
+    regressing back to that by asserting the REST call is always scoped to
+    the caller's own id."""
+    seen_params = {}
+
+    def fake_rest_get(path, token, params):
+        seen_params.update(params)
+        return [{"tier": "admin"}]
+
+    monkeypatch.setattr(gateway, "_rest_get", fake_rest_get)
+
+    tier = gateway.get_user_tier("tok-abc", "user-1")
+
+    assert tier == "admin"
+    assert seen_params.get("user_id") == "eq.user-1"
+
+
+def test_get_user_tier_without_user_id_defaults_to_basic(monkeypatch):
+    def fake_rest_get(path, token, params):
+        raise AssertionError("should not hit REST without a user_id")
+
+    monkeypatch.setattr(gateway, "_rest_get", fake_rest_get)
+
+    assert gateway.get_user_tier("tok-abc", None) == "basic"

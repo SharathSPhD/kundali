@@ -26,9 +26,20 @@ export interface LlmCredential {
 export async function getMyTier(): Promise<AccountTier> {
   const supabase = createClient();
   if (!supabase) return "admin"; // local mode: unrestricted, single-user
+  const { data: auth } = await supabase.auth.getUser();
+  const user = auth?.user;
+  if (!user) return "basic";
+  // `user_tiers` has a permissive "admin can see/edit all rows" policy
+  // alongside the owner-only select policy (see supabase/schema.sql).
+  // Permissive RLS policies OR together, so an admin caller who queries
+  // without filtering by their own id gets every row in the table back —
+  // `.maybeSingle()` would then error (not "exactly one row") and this
+  // would silently fall back to "basic", locking admins out of /admin.
+  // Filter explicitly rather than relying on RLS to narrow this to one row.
   const { data, error } = await supabase
     .from("user_tiers")
     .select("tier")
+    .eq("user_id", user.id)
     .maybeSingle();
   if (error || !data) return "basic";
   return data.tier as AccountTier;

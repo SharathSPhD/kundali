@@ -66,10 +66,15 @@ def _rest_get(path: str, token: str, params: dict) -> list[dict]:
     return resp.json()
 
 
-def get_user_tier(token: Optional[str]) -> str:
-    if not token:
+def get_user_tier(token: Optional[str], user_id: Optional[str]) -> str:
+    if not token or not user_id:
         return "basic"
-    rows = _rest_get("user_tiers", token, {"select": "tier"})
+    # `user_tiers` has a permissive "admin can see/edit all rows" policy
+    # (see supabase/schema.sql) that combines with the owner-select policy
+    # via OR, so an admin caller who doesn't filter by their own id would
+    # get every row in the table back instead of just theirs. Filter
+    # explicitly rather than relying on RLS to narrow this to one row.
+    rows = _rest_get("user_tiers", token, {"select": "tier", "user_id": f"eq.{user_id}"})
     if rows and rows[0].get("tier"):
         return str(rows[0]["tier"])
     return "basic"
@@ -106,6 +111,7 @@ def resolve_provider(
     path is available.
     """
     token = user.get("token")
+    user_id = user.get("sub")
 
     candidates = [requested_provider] if requested_provider else PROVIDER_PRIORITY
     for name in candidates:
@@ -116,7 +122,7 @@ def resolve_provider(
             provider = get_provider(name, api_key=cred["api_key"], base_url=cred.get("base_url"))
             return provider, f"your {name.capitalize()} key"
 
-    tier = get_user_tier(token)
+    tier = get_user_tier(token, user_id)
 
     if tier in ("admin", "guest"):
         provider = _gb10_provider(os.environ.get("GB10_INTERNAL_SECRET", ""))
