@@ -45,7 +45,7 @@ class GeminiProvider(InterpretationProvider):
 
         resp = httpx.post(
             f"{self.base_url}/models/{self.model}:generateContent",
-            params={"key": self.api_key},
+            headers={"x-goog-api-key": self.api_key},
             json={
                 "systemInstruction": {"parts": [{"text": GROUNDING_CONTRACT}]},
                 "contents": contents,

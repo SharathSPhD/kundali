@@ -11,24 +11,29 @@ from ..engine import constants as K
 
 
 def _yoga_names_from_engine() -> list[str]:
-    """Yoga name strings matching evaluate_yogas output."""
+    """Yoga name strings matching evaluate_yogas output.
+
+    `evaluate_yogas` (engine/yogas.py) also emits several names with a
+    per-chart dynamic suffix (e.g. ``Raja Yoga (Mars-Jupiter)``, ``Dhana
+    Yoga (Venus-Moon)``, ``<Planet> (Viparita Raja) Yoga``) that can't be
+    listed exhaustively here; a claim naming one of those exact dynamic
+    forms simply won't be parsed (verify_claims then reports it
+    unverifiable rather than wrong, which is the safe failure mode).
+    Every yoga with a *fixed* name should be listed here — keep in sync
+    with engine/yogas.py's fixed-name `_yoga(...)` calls.
+    """
     return [
         "Gaja Kesari Yoga",
         "Budhaditya Yoga",
         "Chandra-Mangala Yoga",
         "Kemadruma Yoga",
+        "Shakata Yoga",
         "Kala Sarpa Yoga",
-        "Neecha Bhanga (Sun)",
-        "Neecha Bhanga (Moon)",
-        "Neecha Bhanga (Mars)",
-        "Neecha Bhanga (Mercury)",
-        "Neecha Bhanga (Jupiter)",
-        "Neecha Bhanga (Venus)",
-        "Neecha Bhanga (Saturn)",
-        "Raja Yoga",
-        "Dhana Yoga",
-        "Viparita Raja Yoga",
+        "Lakshmi Yoga",
         "Adhi Yoga",
+        "Sunapha Yoga",
+        "Anapha Yoga",
+        "Durudhara Yoga",
         "Amala Yoga",
         "Parivartana Yoga",
         "Shubha Kartari Yoga",
@@ -41,6 +46,16 @@ def _yoga_names_from_engine() -> list[str]:
         "Ruchaka Yoga",
         "Bhadra Yoga",
         "Shasha Yoga",
+        "Raja Yoga",
+        "Dhana Yoga",
+        "Viparita Raja Yoga",
+        "Neecha Bhanga (Sun)",
+        "Neecha Bhanga (Moon)",
+        "Neecha Bhanga (Mars)",
+        "Neecha Bhanga (Mercury)",
+        "Neecha Bhanga (Jupiter)",
+        "Neecha Bhanga (Venus)",
+        "Neecha Bhanga (Saturn)",
     ]
 
 

@@ -136,6 +136,46 @@ def test_rectify():
     assert data["candidates"][0]["score"] >= data["candidates"][-1]["score"]
 
 
+def test_rectify_rejects_oversized_window():
+    r = client.post("/api/rectify", json={
+        "birth": BIRTH,
+        "window_minutes": 720,
+        "step_minutes": 1,
+        "events": [{"type": "marriage", "date": "2015-02-10"}],
+    })
+    assert r.status_code == 422
+
+
+def test_rectify_accepts_max_ui_window_and_step():
+    r = client.post("/api/rectify", json={
+        "birth": BIRTH,
+        "window_minutes": 360,
+        "step_minutes": 30,
+        "events": [{"type": "marriage", "date": "2015-02-10"}],
+    })
+    assert r.status_code == 200
+
+
+def test_rectify_rejects_too_many_events():
+    r = client.post("/api/rectify", json={
+        "birth": BIRTH,
+        "window_minutes": 10,
+        "step_minutes": 5,
+        "events": [{"type": "marriage", "date": "2015-02-10"}] * 26,
+    })
+    assert r.status_code == 422
+
+
+def test_rectify_rejects_empty_events():
+    r = client.post("/api/rectify", json={
+        "birth": BIRTH,
+        "window_minutes": 10,
+        "step_minutes": 5,
+        "events": [],
+    })
+    assert r.status_code == 422
+
+
 def test_panchanga():
     r = client.post("/api/panchanga", json={"birth": BIRTH})
     assert r.status_code == 200

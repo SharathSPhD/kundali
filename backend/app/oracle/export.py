@@ -4,6 +4,10 @@ Key naming convention (stable contract for verify_claims):
 - lagna.sign_name
 - moon.sign_name, moon.nakshatra
 - dasha.mahadasha_lord, dasha.antardasha_lord, dasha.mahadasha_start/end, ...
+  (also dasha.pratyantardasha_lord, dasha.sookshma_lord, dasha.prana_lord
+  when the engine's dasha_path is deep enough to include them)
+- dasha.active_lords — list of every lord active at any level right now
+  (the set a "current dasha lord is X" claim should be checked against)
 - areas.<area>.score, areas.<area>.favorability_label, areas.<area>.trend
 - yogas.active — list of active yoga name strings
 - shadbala.<planet>.total_rupas
@@ -26,17 +30,22 @@ def export_facts(engine_payload: dict) -> dict[str, Any]:
         facts["moon.sign_name"] = moon.get("sign_name")
         facts["moon.nakshatra"] = moon.get("nakshatra")
 
+    _DASHA_LEVEL_NAMES = ["mahadasha", "antardasha", "pratyantardasha", "sookshma", "prana"]
     path = engine_payload.get("dasha_path") or []
+    active_lords: list[str] = []
     for node in path:
+        level = node.get("level")
         lvl = (node.get("level_name") or "").lower()
-        if lvl == "mahadasha" or node.get("level") == 1:
-            facts["dasha.mahadasha_lord"] = node.get("lord")
-            facts["dasha.mahadasha_start"] = node.get("start")
-            facts["dasha.mahadasha_end"] = node.get("end")
-        elif lvl == "antardasha" or node.get("level") == 2:
-            facts["dasha.antardasha_lord"] = node.get("lord")
-            facts["dasha.antardasha_start"] = node.get("start")
-            facts["dasha.antardasha_end"] = node.get("end")
+        if not lvl and isinstance(level, int) and 1 <= level <= len(_DASHA_LEVEL_NAMES):
+            lvl = _DASHA_LEVEL_NAMES[level - 1]
+        if lvl not in _DASHA_LEVEL_NAMES:
+            continue
+        facts[f"dasha.{lvl}_lord"] = node.get("lord")
+        facts[f"dasha.{lvl}_start"] = node.get("start")
+        facts[f"dasha.{lvl}_end"] = node.get("end")
+        if node.get("lord"):
+            active_lords.append(node["lord"])
+    facts["dasha.active_lords"] = active_lords
 
     for area in engine_payload.get("areas") or []:
         name = area.get("area")

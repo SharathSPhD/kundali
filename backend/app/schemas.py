@@ -110,11 +110,16 @@ class LifeEvent(BaseModel):
     note: Optional[str] = None
 
 
+# The frontend's own UI caps window at 360 and step at 1, i.e. at most
+# 2*360/1 + 1 = 721 candidates — each a full chart+dasha recomputation.
+# window_minutes is capped to match here (was 720, doubling worst-case
+# compute per request for no product benefit — nothing in the app ever
+# requests more).
 class RectifyRequest(BaseModel):
     birth: BirthDataModel
-    window_minutes: int = Field(default=60, ge=1, le=720)
+    window_minutes: int = Field(default=60, ge=1, le=360)
     step_minutes: int = Field(default=2, ge=1, le=30)
-    events: list[LifeEvent]
+    events: list[LifeEvent] = Field(..., min_length=1, max_length=25)
     config: Optional[EngineConfigModel] = None
 
 

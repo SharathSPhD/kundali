@@ -31,7 +31,7 @@ import httpx
 
 from ..auth import _supabase_url
 from . import get_provider
-from .base import InterpretationProvider
+from .base import InterpretationProvider, UnsafeBaseUrlError, assert_safe_user_base_url
 
 PROVIDER_PRIORITY = ["anthropic", "openai", "gemini", "ollama"]
 _TIMEOUT = 10.0
@@ -122,16 +122,30 @@ def resolve_provider(
         cred = get_user_credential(token, name)
         if not cred:
             continue
+        base_url = cred.get("base_url")
+        if base_url:
+            try:
+                assert_safe_user_base_url(base_url)
+            except UnsafeBaseUrlError as exc:
+                # This backend makes the outbound request itself, so a
+                # stored base_url pointing at a private/link-local/metadata
+                # address is an SSRF vector, not just a bad user setting.
+                # Refuse explicitly rather than silently falling through to
+                # another provider or a confusing generic "blocked" message.
+                raise ProviderBlocked(
+                    reason=f"Your {name} base URL is not usable: {exc}",
+                    upgrade_hint="invalid_base_url",
+                ) from exc
         if name == "ollama":
-            if cred.get("api_key") or cred.get("base_url"):
+            if cred.get("api_key") or base_url:
                 provider = get_provider(
                     name,
                     api_key=cred.get("api_key") or "",
-                    base_url=cred.get("base_url"),
+                    base_url=base_url,
                 )
                 return provider, f"your {name.capitalize()} key"
         elif cred.get("api_key"):
-            provider = get_provider(name, api_key=cred["api_key"], base_url=cred.get("base_url"))
+            provider = get_provider(name, api_key=cred["api_key"], base_url=base_url)
             return provider, f"your {name.capitalize()} key"
 
     tier = get_user_tier(token, user_id)

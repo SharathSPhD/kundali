@@ -72,6 +72,29 @@ def test_correct_dasha_lord_passes(facts, engine_payload):
     assert result["verified"] is True
 
 
+def test_deepest_level_dasha_lord_claim_passes(facts, engine_payload):
+    """A claim naming the pratyantardasha (or deeper) lord — not just the
+    mahadasha/antardasha lord — must still verify correctly; previously
+    only the top two levels were exported/checked."""
+    deepest = engine_payload["dasha_path"][-1]
+    if deepest["level"] < 3:
+        pytest.skip("fixture chart's dasha_path has no level-3+ node")
+    text = f"The period of {deepest['lord']} is currently active."
+    claims = parse_claims(text)
+    assert claims
+    result = verify_claims(claims, facts)
+    assert result["verified"] is True
+
+
+def test_deep_dasha_levels_are_exported(facts, engine_payload):
+    for node in engine_payload["dasha_path"]:
+        lvl = node["level_name"]
+        assert facts.get(f"dasha.{lvl}_lord") == node["lord"]
+    assert set(facts["dasha.active_lords"]) == {
+        n["lord"] for n in engine_payload["dasha_path"]
+    }
+
+
 def test_invented_yoga_rejected(facts, engine_payload):
     active = set(engine_payload["context"]["active_yogas"])
     for candidate in ("Gaja Kesari Yoga", "Kemadruma Yoga", "Kala Sarpa Yoga"):

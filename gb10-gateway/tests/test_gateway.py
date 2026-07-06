@@ -25,6 +25,14 @@ def test_healthz_needs_no_auth(client):
     assert resp.json()["ok"] is True
 
 
+def test_healthz_does_not_leak_infra_details(client):
+    """Unauthenticated endpoint — must not aid reconnaissance by exposing
+    the upstream Ollama URL or the model allow-list."""
+    body = client.get("/healthz").json()
+    assert "ollama_url" not in body
+    assert "allowed_models" not in body
+
+
 def test_chat_without_auth_is_rejected(client):
     resp = client.post("/api/chat", json={"model": "llama3.1:8b"})
     assert resp.status_code == 401

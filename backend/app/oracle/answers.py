@@ -161,11 +161,11 @@ def build_answer_packet(intent: str, engine_payload: dict, question: str) -> dic
             summaries = []
             for planet, row in sb.items():
                 rupas = row.get("total_rupas")
-                req = row.get("required_rupas")
                 ratio = row.get("ratio")
                 verdict = "sufficient" if row.get("sufficient") else "below required"
-                summaries.append(f"{planet}: {rupas:.2f} rupas ({verdict}, ratio {ratio})")
-                citations.append(f"shadbala: {planet} {rupas:.2f} rupas")
+                rupas_txt = f"{rupas:.2f}" if isinstance(rupas, (int, float)) else "unknown"
+                summaries.append(f"{planet}: {rupas_txt} rupas ({verdict}, ratio {ratio})")
+                citations.append(f"shadbala: {planet} {rupas_txt} rupas")
             parts.append("Planetary strength (Shadbala): " + "; ".join(summaries) + ".")
         else:
             parts.append("Shadbala data is not available in the engine payload.")
@@ -202,7 +202,8 @@ def build_answer_packet(intent: str, engine_payload: dict, question: str) -> dic
         citations.extend(cites)
 
     if question and intent != "rectification_help":
-        parts.insert(0, f"Regarding your question —")
+        q = question.strip().rstrip("?")
+        parts.insert(0, f"Regarding your question about {q}:")
 
     return {
         "text": " ".join(parts),

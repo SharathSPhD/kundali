@@ -46,10 +46,9 @@ def verify_claims(claims: list[dict], facts: dict) -> dict:
             detail = f"{key}={expected!r}, claimed {claim['sign']!r}"
 
         elif ctype == "dasha_lord":
-            maha = facts.get("dasha.mahadasha_lord")
-            antar = facts.get("dasha.antardasha_lord")
-            ok = claim["lord"] in (maha, antar)
-            detail = f"maha={maha!r}, antar={antar!r}, claimed {claim['lord']!r}"
+            active_lords = facts.get("dasha.active_lords") or []
+            ok = claim["lord"] in active_lords
+            detail = f"active_lords={active_lords!r}, claimed {claim['lord']!r}"
 
         elif ctype == "yoga_present":
             ok = claim["yoga_name"] in active_yogas

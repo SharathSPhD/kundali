@@ -95,6 +95,21 @@ def test_yoga_answer_handles_unknown_yoga_gracefully():
     assert any(c == "yoga: Some Unregistered Yoga" for c in packet["citations"])
 
 
+def test_question_prefix_is_a_complete_sentence(engine_payload):
+    packet = build_answer_packet("dasha", engine_payload, "What does my dasha say?")
+    assert packet["text"].startswith("Regarding your question about What does my dasha say:")
+    assert "— " not in packet["text"].split(":", 1)[0]
+
+
+def test_shadbala_answer_handles_missing_total_rupas_without_crashing():
+    payload = {
+        "context": {}, "areas": [], "dasha_path": [],
+        "shadbala": {"planets": {"Jupiter": {"total_rupas": None, "ratio": None, "sufficient": False}}},
+    }
+    packet = build_answer_packet("shadbala", payload, "is jupiter strong?")
+    assert "unknown" in packet["text"]
+
+
 def test_career_answer_cites_registry_house_source(engine_payload):
     packet = build_answer_packet("career", engine_payload, "career?")
     assert any("classical house significations" in c for c in packet["citations"])

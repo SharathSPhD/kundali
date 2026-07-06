@@ -29,6 +29,27 @@ def _auth_disabled() -> bool:
     return os.environ.get("AUTH_DISABLED", "0") in ("1", "true", "yes")
 
 
+def _guard_auth_disabled_in_deployed_env() -> None:
+    """Refuse to import this module (and thus start the app) if someone
+    mis-sets AUTH_DISABLED=1 on a real deployment. Vercel sets `VERCEL=1`
+    for every deployment including previews (not just production) — a
+    preview URL is still reachable over the public internet, so any
+    detected deployment is treated as unsafe, not just VERCEL_ENV=='production'.
+    """
+    if not _auth_disabled():
+        return
+    if os.environ.get("VERCEL") or os.environ.get("RENDER"):
+        raise RuntimeError(
+            "AUTH_DISABLED=1 is set in a deployed environment (VERCEL/RENDER "
+            "detected) — refusing to start. This would allow unauthenticated "
+            "access to every engine/interpret endpoint. AUTH_DISABLED is for "
+            "local dev/tests only; unset it in this environment's variables."
+        )
+
+
+_guard_auth_disabled_in_deployed_env()
+
+
 def _supabase_url() -> str:
     url = os.environ.get("SUPABASE_URL") or os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
     if url:

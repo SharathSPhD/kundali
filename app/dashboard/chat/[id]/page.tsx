@@ -54,11 +54,16 @@ function hasUsableInferencePath(
   );
 }
 
-function modeLabel(provider: string | null | undefined): string | null {
+function modeLabel(
+  provider: string | null | undefined,
+  verified?: boolean | null
+): string | null {
   if (!provider || provider === "blocked") return null;
   if (provider === "template") return "Deterministic summary";
   if (provider === "template_qa") return "Deterministic Q&A";
-  return "LLM narrative + verified";
+  if (verified === true) return "LLM narrative + verified";
+  if (verified === false) return "LLM narrative — unverified claims";
+  return "LLM narrative — unchecked";
 }
 
 export default function ChatPage({ params }: { params: { id: string } }) {
@@ -95,7 +100,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
             .reverse()
             .find((m) => m.role === "assistant");
           if (lastAssistant?.provider) {
-            setLastMode(modeLabel(lastAssistant.provider));
+            setLastMode(modeLabel(lastAssistant.provider, lastAssistant.verified));
           }
         }
         if (!hasUsableInferencePath(tier, creds)) {
@@ -151,7 +156,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         verificationWarnings: res.verificationWarnings,
       };
       setMessages((m) => [...m, assistantMsg]);
-      setLastMode(modeLabel(res.provider));
+      setLastMode(modeLabel(res.provider, res.verified));
 
       void appendChatMessage(params.id, "user", q);
       void appendChatMessage(params.id, "assistant", assistantMsg.content, {

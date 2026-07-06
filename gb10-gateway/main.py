@@ -56,7 +56,10 @@ def _require_auth(authorization: str) -> None:
 
 @app.get("/healthz")
 def healthz() -> dict:
-    return {"ok": True, "ollama_url": OLLAMA_URL, "allowed_models": sorted(ALLOWED_MODELS)}
+    # Deliberately minimal: this endpoint is unauthenticated (uptime
+    # monitors need it to be), so it must not leak infrastructure details
+    # (upstream URL, model allow-list) that would aid reconnaissance.
+    return {"ok": True}
 
 
 @app.post("/api/chat")
