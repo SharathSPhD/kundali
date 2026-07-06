@@ -1,8 +1,15 @@
 # Vercel's Python builder installs from THIS file (repo root), not
 # backend/requirements.txt, even though api/index.py runs backend/app code
-# (see api/index.py's sys.path hack) — that split bit us once already (the
-# anthropic SDK was added to backend/requirements.txt but not here, so BYOK
-# Anthropic calls 502'd on Vercel with "No module named 'anthropic'" while
-# local Docker tests passed). Single-source it here instead of trying to
-# keep two files in sync by hand.
--r backend/requirements.txt
+# (see api/index.py's sys.path hack). Vercel's dependency parser does NOT
+# support `-r other-file.txt` includes (confirmed: "could not parse
+# requirements.txt" build error), so this file must be a flat, literal copy
+# of backend/requirements.txt kept in sync by hand. The
+# `backend-requirements-sync` CI job fails the build if these two files ever
+# diverge.
+fastapi>=0.110,<1.0
+uvicorn[standard]>=0.29,<1.0
+pydantic>=2.6,<3.0
+pyswisseph>=2.10,<3.0
+httpx>=0.27,<1.0
+PyJWT[crypto]>=2.8,<3.0
+anthropic>=0.40,<1.0

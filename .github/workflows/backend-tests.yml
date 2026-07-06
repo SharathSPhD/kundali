@@ -4,13 +4,33 @@ on:
   push:
     paths:
       - "backend/**"
+      - "requirements.txt"
       - ".github/workflows/backend-tests.yml"
   pull_request:
     paths:
       - "backend/**"
+      - "requirements.txt"
       - ".github/workflows/backend-tests.yml"
 
 jobs:
+  requirements-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify root requirements.txt matches backend/requirements.txt
+        run: |
+          # Vercel's Python builder reads ONLY the repo-root requirements.txt
+          # and can't parse `-r backend/requirements.txt` includes, so the two
+          # files must be kept as identical, literal copies by hand. This
+          # catches the case where someone updates one and forgets the other
+          # (which previously caused a "No module named 'anthropic'" 502 on
+          # Vercel because the root file was out of date).
+          if ! diff -q requirements.txt backend/requirements.txt; then
+            echo "::error::requirements.txt (repo root) has drifted from backend/requirements.txt. Vercel installs from the root file, so keep both in sync."
+            exit 1
+          fi
+
   pytest:
     runs-on: ubuntu-latest
     defaults:
