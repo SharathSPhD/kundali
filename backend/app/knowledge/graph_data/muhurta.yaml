@@ -1,0 +1,64 @@
+# Electional (muhurta) tables. Standard entries from the Muhurta
+# Chintamani / Muhurta Parijata tradition as commonly summarized.
+# The engine (engine/muhurta.py) combines these with tara bala and
+# chandra bala computed from the person's own janma nakshatra/rashi —
+# muhurta here is personalized, not just calendar-generic.
+source: Muhurta Chintamani / Muhurta Parijata tradition
+
+# Tithi groups (lunar day classes). Rikta tithis are avoided for most
+# undertakings; each activity below may override.
+tithi_classes:
+  nanda: [1, 6, 11]        # joyous
+  bhadra: [2, 7, 12]       # auspicious
+  jaya: [3, 8, 13]         # victorious
+  rikta: [4, 9, 14]        # "empty" — avoided for auspicious starts
+  purna: [5, 10, 15]       # full/complete
+  # 30 (amavasya) and 15 (purnima) get special handling per activity.
+
+# Tara bala cycle (count from janma nakshatra to the day's nakshatra,
+# mod 9): favorable/unfavorable per the standard cycle.
+tara_bala:
+  1: { name: Janma,        favorable: false, note: body — neutral-to-avoid for major starts }
+  2: { name: Sampat,       favorable: true,  note: wealth }
+  3: { name: Vipat,        favorable: false, note: danger }
+  4: { name: Kshema,       favorable: true,  note: well-being }
+  5: { name: Pratyak,      favorable: false, note: obstacles }
+  6: { name: Sadhana,      favorable: true,  note: accomplishment }
+  7: { name: Naidhana,     favorable: false, note: destruction — strongest avoid }
+  8: { name: Mitra,        favorable: true,  note: friend }
+  9: { name: Parama Mitra, favorable: true,  note: great friend }
+
+activities:
+  marriage:
+    aliases: [marriage, wedding, engagement]
+    nakshatras: [Rohini, Mrigashira, Magha, Uttara Phalguni, Hasta, Swati, Anuradha, Mula, Uttara Ashadha, Uttara Bhadrapada, Revati]
+    varas: [Monday, Wednesday, Thursday, Friday]
+    avoid_tithis: [4, 9, 14, 30]
+    note: Magha/Mula first padas traditionally avoided; a jyotishi should confirm the final lagna.
+  new_venture:
+    aliases: [business, venture, launch, opening, startup, new work, registration]
+    nakshatras: [Ashwini, Rohini, Pushya, Hasta, Chitra, Anuradha, Uttara Phalguni, Uttara Ashadha, Uttara Bhadrapada, Shravana, Revati]
+    varas: [Wednesday, Thursday, Friday, Sunday]
+    avoid_tithis: [4, 9, 14, 30]
+  travel:
+    aliases: [travel, journey, trip, relocation, moving]
+    nakshatras: [Ashwini, Mrigashira, Punarvasu, Pushya, Hasta, Anuradha, Shravana, Dhanishta, Revati]
+    varas: [Monday, Thursday, Friday]
+    avoid_tithis: [4, 9, 14, 30]
+    note: direction-specific rules (disha shula) exist; not modeled here.
+  education:
+    aliases: [education, study, admission, vidyarambha, learning, course]
+    nakshatras: [Ashwini, Punarvasu, Pushya, Hasta, Chitra, Swati, Anuradha, Shravana, Revati]
+    varas: [Wednesday, Thursday, Friday, Sunday]
+    avoid_tithis: [4, 9, 14, 30]
+  housewarming:
+    aliases: [housewarming, griha pravesh, new home, moving in]
+    nakshatras: [Rohini, Mrigashira, Uttara Phalguni, Uttara Ashadha, Uttara Bhadrapada, Anuradha, Revati, Pushya]
+    varas: [Monday, Wednesday, Thursday, Friday]
+    avoid_tithis: [4, 9, 14, 30]
+  medical:
+    aliases: [medical, surgery, treatment, operation]
+    nakshatras: [Ashwini, Pushya, Hasta, Anuradha, Shravana, Revati, Mrigashira]
+    varas: [Monday, Wednesday, Thursday]
+    avoid_tithis: [4, 9, 14, 30]
+    note: for surgery some traditions prefer malefic-day scheduling for excision; consult a practitioner.

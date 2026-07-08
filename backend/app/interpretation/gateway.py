@@ -35,6 +35,8 @@ from .base import InterpretationProvider, UnsafeBaseUrlError, assert_safe_user_b
 
 PROVIDER_PRIORITY = ["anthropic", "openai", "gemini", "ollama"]
 _TIMEOUT = 10.0
+_RUNTIME_CONFIG_CACHE: dict = {"values": None, "fetched_at": 0.0}
+_RUNTIME_CONFIG_TTL = 300.0
 
 
 class ProviderBlocked(Exception):
@@ -92,15 +94,49 @@ def get_user_credential(token: Optional[str], provider: str) -> Optional[dict]:
     return rows[0] if rows else None
 
 
+def _runtime_config() -> dict[str, str]:
+    """Non-secret deployment config stored in Supabase (`runtime_config`
+    table, anon-readable). This is how the gateway URL and default model
+    reach a Vercel deployment without anyone touching dashboard env vars —
+    the GB10 box registers itself and every serverless instance picks it
+    up here. Env vars, when present, still win (see callers)."""
+    import time
+
+    now = time.time()
+    if (
+        _RUNTIME_CONFIG_CACHE["values"] is not None
+        and now - _RUNTIME_CONFIG_CACHE["fetched_at"] < _RUNTIME_CONFIG_TTL
+    ):
+        return _RUNTIME_CONFIG_CACHE["values"]
+    base, anon = _supabase_url(), _anon_key()
+    values: dict[str, str] = {}
+    if base and anon:
+        try:
+            resp = httpx.get(
+                f"{base}/rest/v1/runtime_config",
+                headers={"apikey": anon, "Authorization": f"Bearer {anon}"},
+                params={"select": "key,value"},
+                timeout=_TIMEOUT,
+            )
+            if resp.status_code == 200:
+                values = {row["key"]: row["value"] for row in resp.json()}
+        except httpx.HTTPError:
+            values = {}
+    _RUNTIME_CONFIG_CACHE.update(values=values, fetched_at=now)
+    return values
+
+
 def _gb10_provider(secret: str) -> Optional[InterpretationProvider]:
-    gateway_url = os.environ.get("OLLAMA_GATEWAY_URL")
-    if not gateway_url:
+    gateway_url = os.environ.get("OLLAMA_GATEWAY_URL") or _runtime_config().get(
+        "ollama_gateway_url"
+    )
+    if not gateway_url or not secret:
         return None
     return get_provider(
         "ollama",
         base_url=gateway_url,
         api_key=secret,
-        model=os.environ.get("GB10_MODEL"),
+        model=os.environ.get("GB10_MODEL") or _runtime_config().get("gb10_default_model"),
     )
 
 
@@ -150,16 +186,35 @@ def resolve_provider(
 
     tier = get_user_tier(token, user_id)
 
+    # Shared secret when configured; otherwise forward the caller's own
+    # Supabase JWT — the gateway verifies it and checks the tier itself
+    # (see gb10-gateway/main.py), so admin/guest/paid chat works with zero
+    # secret coordination between this deployment and the GB10 box.
     if tier in ("admin", "guest"):
-        provider = _gb10_provider(os.environ.get("GB10_INTERNAL_SECRET", ""))
+        secret = os.environ.get("GB10_INTERNAL_SECRET", "") or (token or "")
+        provider = _gb10_provider(secret)
         if provider:
             return provider, "Kundali (GB10)"
 
     if tier == "paid":
-        provider = _gb10_provider(os.environ.get("GB10_PAID_SECRET", ""))
+        secret = os.environ.get("GB10_PAID_SECRET", "") or (token or "")
+        provider = _gb10_provider(secret)
         if provider:
             return provider, "Kundali (GB10)"
 
+    if tier in ("admin", "guest", "paid"):
+        # This tier *should* have gateway access — the block is a deployment
+        # gap (no gateway URL registered), not a account limitation. Say so.
+        raise ProviderBlocked(
+            reason=(
+                f"Your account tier ({tier}) includes AI chat, but no GB10 "
+                "gateway is registered. An admin should start the gateway on "
+                "GB10 (gb10-gateway/deploy-local.sh + tailscale funnel) and "
+                "set its URL under Admin → GB10 gateway. Deterministic Ask "
+                "answers still work meanwhile."
+            ),
+            upgrade_hint="gateway_not_configured",
+        )
     raise ProviderBlocked(
         reason=(
             f"Your account ({tier}) has no inference access configured. "

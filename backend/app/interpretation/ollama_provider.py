@@ -45,8 +45,27 @@ class OllamaProvider(InterpretationProvider):
             ),
         }
         headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
-        resp = httpx.post(f"{self.base_url}/api/chat", json=body, headers=headers,
-                           timeout=self.timeout)
+        try:
+            resp = httpx.post(f"{self.base_url}/api/chat", json=body, headers=headers,
+                              timeout=self.timeout)
+        except httpx.ConnectError as exc:
+            raise RuntimeError(
+                f"The Ollama gateway at {self.base_url} is unreachable — the GB10 "
+                "machine may be offline or its tunnel down. Try again shortly, or "
+                "use the deterministic Ask mode which needs no AI server."
+            ) from exc
+        except httpx.TimeoutException as exc:
+            raise RuntimeError(
+                f"The Ollama gateway timed out (model '{self.model}' may still be "
+                "loading into memory). Retry in a minute."
+            ) from exc
+        if resp.status_code in (401, 403):
+            raise RuntimeError(
+                "The Ollama gateway rejected this account's credentials "
+                f"(HTTP {resp.status_code}: {resp.text[:200]})."
+            )
+        if resp.status_code == 400:
+            raise RuntimeError(f"The Ollama gateway refused the request: {resp.text[:300]}")
         resp.raise_for_status()
         text = resp.json().get("message", {}).get("content", "")
         return {"text": text, "citations": _extract_citations(text), "provider": self.name}

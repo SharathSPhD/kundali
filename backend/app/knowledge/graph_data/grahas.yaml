@@ -1,0 +1,196 @@
+# Graha (planet) nodes of the Vedic knowledge graph.
+# Structural attributes (lordship, exaltation, maitri, drishti) follow BPHS;
+# karakatvas follow BPHS "Graha karakatvas" with Uttara Kalamrita additions;
+# remedial attributions follow the common Phaladeepika / Brihat Samhita
+# tradition. Every block carries its own `source` so answers can cite it.
+grahas:
+  Sun:
+    sanskrit: Surya
+    aliases: [sun, surya, ravi, aditya]
+    nature: { class: natural_malefic, note: mild/cruel rather than destructive, source: BPHS 3.5 }
+    own_signs: [Leo]
+    moolatrikona: { sign: Leo, from_deg: 0, to_deg: 20 }
+    exaltation: { sign: Aries, degree: 10 }
+    debilitation: { sign: Libra, degree: 10 }
+    friends: [Moon, Mars, Jupiter]
+    enemies: [Venus, Saturn]
+    neutrals: [Mercury]
+    drishti: [7]
+    karaka_of: [soul, father, authority, government, vitality, health, fame, bones, right eye]
+    karaka_source: BPHS graha karakatvas; Uttara Kalamrita 5
+    dhatu: bone
+    remedies:
+      gemstone: Ruby (manikya)
+      metal: copper
+      mantra: Aditya Hridaya / Surya gayatri
+      dana: wheat, jaggery, copper (given on Sunday)
+      fast_day: Sunday
+      source: Phaladeepika; Brihat Samhita gem tradition
+  Moon:
+    sanskrit: Chandra
+    aliases: [moon, chandra, soma]
+    nature: { class: conditional, note: benefic when waxing/bright, malefic when dark, source: BPHS 3.5 }
+    own_signs: [Cancer]
+    moolatrikona: { sign: Taurus, from_deg: 4, to_deg: 30 }
+    exaltation: { sign: Taurus, degree: 3 }
+    debilitation: { sign: Scorpio, degree: 3 }
+    friends: [Sun, Mercury]
+    enemies: []
+    neutrals: [Mars, Jupiter, Venus, Saturn]
+    drishti: [7]
+    karaka_of: [mind, mother, emotions, public, popularity, fluids, travel by water, left eye]
+    karaka_source: BPHS graha karakatvas; Uttara Kalamrita 5
+    dhatu: blood
+    remedies:
+      gemstone: Pearl (mukta)
+      metal: silver
+      mantra: Chandra gayatri / Om som somaya namah
+      dana: rice, white cloth, silver (given on Monday)
+      fast_day: Monday
+      source: Phaladeepika; Brihat Samhita gem tradition
+  Mars:
+    sanskrit: Mangala
+    aliases: [mars, mangal, mangala, kuja, angaraka, bhauma]
+    nature: { class: natural_malefic, source: BPHS 3.5 }
+    own_signs: [Aries, Scorpio]
+    moolatrikona: { sign: Aries, from_deg: 0, to_deg: 12 }
+    exaltation: { sign: Capricorn, degree: 28 }
+    debilitation: { sign: Cancer, degree: 28 }
+    friends: [Sun, Moon, Jupiter]
+    enemies: [Mercury]
+    neutrals: [Venus, Saturn]
+    drishti: [4, 7, 8]
+    karaka_of: [courage, younger siblings, land, property, energy, conflict, accidents, surgery, muscles]
+    karaka_source: BPHS graha karakatvas; Uttara Kalamrita 5
+    dhatu: marrow
+    remedies:
+      gemstone: Red coral (moonga)
+      metal: copper
+      mantra: Mangala gayatri / Om angarakaya namah
+      dana: red lentils (masoor), red cloth (given on Tuesday)
+      fast_day: Tuesday
+      source: Phaladeepika; Brihat Samhita gem tradition
+  Mercury:
+    sanskrit: Budha
+    aliases: [mercury, budha, budh]
+    nature: { class: conditional, note: benefic alone or with benefics, malefic with malefics, source: BPHS 3.5 }
+    own_signs: [Gemini, Virgo]
+    moolatrikona: { sign: Virgo, from_deg: 16, to_deg: 20 }
+    exaltation: { sign: Virgo, degree: 15 }
+    debilitation: { sign: Pisces, degree: 15 }
+    friends: [Sun, Venus]
+    enemies: [Moon]
+    neutrals: [Mars, Jupiter, Saturn]
+    drishti: [7]
+    karaka_of: [intellect, speech, communication, commerce, mathematics, education, wit, maternal relatives, skin]
+    karaka_source: BPHS graha karakatvas; Uttara Kalamrita 5
+    dhatu: skin
+    remedies:
+      gemstone: Emerald (panna)
+      metal: bronze
+      mantra: Budha gayatri / Om budhaya namah
+      dana: green gram (moong), green cloth (given on Wednesday)
+      fast_day: Wednesday
+      source: Phaladeepika; Brihat Samhita gem tradition
+  Jupiter:
+    sanskrit: Guru
+    aliases: [jupiter, guru, brihaspati, brhaspati]
+    nature: { class: natural_benefic, note: greatest benefic, source: BPHS 3.5 }
+    own_signs: [Sagittarius, Pisces]
+    moolatrikona: { sign: Sagittarius, from_deg: 0, to_deg: 10 }
+    exaltation: { sign: Cancer, degree: 5 }
+    debilitation: { sign: Capricorn, degree: 5 }
+    friends: [Sun, Moon, Mars]
+    enemies: [Mercury, Venus]
+    neutrals: [Saturn]
+    drishti: [5, 7, 9]
+    karaka_of: [wisdom, dharma, wealth, children, teachers, fortune, husband in a woman's chart, expansion, liver]
+    karaka_source: BPHS graha karakatvas; Uttara Kalamrita 5
+    dhatu: fat
+    remedies:
+      gemstone: Yellow sapphire (pukhraj)
+      metal: gold
+      mantra: Guru gayatri / Om brihaspataye namah
+      dana: chana dal, turmeric, yellow cloth (given on Thursday)
+      fast_day: Thursday
+      source: Phaladeepika; Brihat Samhita gem tradition
+  Venus:
+    sanskrit: Shukra
+    aliases: [venus, shukra, sukra]
+    nature: { class: natural_benefic, source: BPHS 3.5 }
+    own_signs: [Taurus, Libra]
+    moolatrikona: { sign: Libra, from_deg: 0, to_deg: 15 }
+    exaltation: { sign: Pisces, degree: 27 }
+    debilitation: { sign: Virgo, degree: 27 }
+    friends: [Mercury, Saturn]
+    enemies: [Sun, Moon]
+    neutrals: [Mars, Jupiter]
+    drishti: [7]
+    karaka_of: [marriage, spouse, wife in a man's chart, love, arts, beauty, vehicles, luxury, reproduction]
+    karaka_source: BPHS graha karakatvas; Uttara Kalamrita 5
+    dhatu: semen/reproductive tissue
+    remedies:
+      gemstone: Diamond (heera) or white sapphire
+      metal: silver
+      mantra: Shukra gayatri / Om shukraya namah
+      dana: white rice, curd, white cloth (given on Friday)
+      fast_day: Friday
+      source: Phaladeepika; Brihat Samhita gem tradition
+  Saturn:
+    sanskrit: Shani
+    aliases: [saturn, shani, sani]
+    nature: { class: natural_malefic, note: greatest malefic; disciplinarian, source: BPHS 3.5 }
+    own_signs: [Capricorn, Aquarius]
+    moolatrikona: { sign: Aquarius, from_deg: 0, to_deg: 20 }
+    exaltation: { sign: Libra, degree: 20 }
+    debilitation: { sign: Aries, degree: 20 }
+    friends: [Mercury, Venus]
+    enemies: [Sun, Moon, Mars]
+    neutrals: [Jupiter]
+    drishti: [3, 7, 10]
+    karaka_of: [longevity, grief, discipline, labor, service, delay, obstacles, chronic disease, the masses, nerves]
+    karaka_source: BPHS graha karakatvas; Uttara Kalamrita 5
+    dhatu: nerves/wind
+    remedies:
+      gemstone: Blue sapphire (neelam) — only after testing, per tradition
+      metal: iron
+      mantra: Shani gayatri / Om shanaishcharaya namah
+      dana: black sesame, mustard oil, black cloth (given on Saturday)
+      fast_day: Saturday
+      source: Phaladeepika; Brihat Samhita gem tradition
+  Rahu:
+    sanskrit: Rahu
+    aliases: [rahu, north node, dragon's head]
+    nature: { class: natural_malefic, note: shadow graha; acts like Saturn, source: BPHS 3.5; "Shanivat Rahu" }
+    own_signs: []
+    exaltation: { sign: Taurus, degree: null, note: variant tradition also gives Gemini }
+    debilitation: { sign: Scorpio, degree: null, note: variant tradition also gives Sagittarius }
+    friends: [Venus, Saturn]
+    enemies: [Sun, Moon]
+    neutrals: [Mars, Mercury, Jupiter]
+    drishti: [5, 7, 9]
+    karaka_of: [obsession, foreign lands, unconventional paths, sudden gains, technology, illusion, in-laws]
+    karaka_source: later Parashari tradition; Uttara Kalamrita 5
+    remedies:
+      gemstone: Hessonite (gomed)
+      mantra: Rahu beeja / Om rahave namah
+      dana: black gram (urad), blue/black cloth (given on Saturday)
+      source: Phaladeepika; Brihat Samhita gem tradition
+  Ketu:
+    sanskrit: Ketu
+    aliases: [ketu, south node, dragon's tail]
+    nature: { class: natural_malefic, note: shadow graha; acts like Mars; moksha-karaka, source: BPHS 3.5; "Kujavat Ketu" }
+    own_signs: []
+    exaltation: { sign: Scorpio, degree: null, note: variant tradition also gives Sagittarius }
+    debilitation: { sign: Taurus, degree: null, note: variant tradition also gives Gemini }
+    friends: [Mars, Venus, Saturn]
+    enemies: [Sun, Moon]
+    neutrals: [Mercury, Jupiter]
+    drishti: [5, 7, 9]
+    karaka_of: [liberation, detachment, spirituality, past-life patterns, sudden events, wounds, mysticism]
+    karaka_source: later Parashari tradition; Uttara Kalamrita 5
+    remedies:
+      gemstone: Cat's eye (lehsunia)
+      mantra: Ketu beeja / Om ketave namah
+      dana: multi-colored blanket, sesame (given on Tuesday/Saturday)
+      source: Phaladeepika; Brihat Samhita gem tradition

@@ -7,6 +7,7 @@ claim verification context, and future formalization work.
 """
 from __future__ import annotations
 
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -90,9 +91,17 @@ def yoga_info(name: str) -> dict[str, Any] | None:
     catalog = _yoga_catalog()
     if name in catalog:
         return catalog[name]
-    key = name.strip().lower()
+
+    def _norm(s: str) -> str:
+        # Engine emits parameterized instances like "Neecha Bhanga (Venus)"
+        # or "Raja Yoga (Mars-Moon)"; the catalog describes the family.
+        s = re.sub(r"\s*\([^)]*\)", "", s)
+        s = re.sub(r"\s+(yoga|dosha)$", "", s.strip(), flags=re.I)
+        return s.strip().lower()
+
+    key = _norm(name)
     for cname, entry in catalog.items():
-        if cname.strip().lower() == key:
+        if _norm(cname) == key:
             return entry
     return None
 

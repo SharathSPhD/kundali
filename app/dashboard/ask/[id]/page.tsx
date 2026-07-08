@@ -19,12 +19,14 @@ import SouthIndianChart, {
 } from "@/components/SouthIndianChart";
 import Button from "@/components/ui/Button";
 import Tabs from "@/components/ui/Tabs";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import {
   fetchChart,
   fetchVargas,
   interpret,
   type ChartData,
   type VargaChart,
+  type Interpretation,
 } from "@/lib/api";
 import { getProfile } from "@/lib/profiles";
 import type { BirthProfile } from "@/lib/types";
@@ -38,10 +40,11 @@ import {
 } from "@/lib/jyotisha";
 
 const SUGGESTIONS = [
-  "What does my current dasha indicate?",
-  "How is my career period looking?",
-  "Which yogas are active in my chart?",
-  "What should I know about the current transits?",
+  "What does Saturn mean in my chart?",
+  "Which is my strongest planet?",
+  "What gemstone should I wear?",
+  "When will my career improve?",
+  "Tell me about my 7th house",
 ];
 
 const AREA_ICONS: Record<string, LucideIcon> = {
@@ -173,6 +176,42 @@ function FavorabilityChip({ label }: { label: string }) {
   return <span className={`chip text-[11px] ${className}`}>{label}</span>;
 }
 
+function DerivationSteps({
+  steps,
+}: {
+  steps: Interpretation["derivation"];
+}) {
+  if (!steps || steps.length === 0) return null;
+  return (
+    <div className="space-y-3">
+      {steps.map((step, i) => (
+        <div key={i} className="space-y-1.5 border-l-2 border-gold-700/40 pl-3">
+          <p className="text-sm text-slate-100">
+            <span className="mr-2 font-semibold text-gold-300">Step {i + 1}:</span>
+            <span className="font-medium">{step.claim}</span>
+          </p>
+          <p className="text-xs text-slate-400">{step.rule}</p>
+          {step.source && (
+            <p className="text-[10px] italic text-slate-500">{step.source}</p>
+          )}
+          {step.facts && step.facts.length > 0 && (
+            <div className="flex flex-wrap gap-1 pt-1">
+              {step.facts.map((fact, j) => (
+                <span
+                  key={j}
+                  className="chip gap-1 border-night-500/80 bg-night-700/50 font-mono text-[10px] text-slate-400"
+                >
+                  {fact}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function AskPage({ params }: { params: { id: string } }) {
   const [profile, setProfile] = useState<BirthProfile | null>(null);
   const [pageTab, setPageTab] = useState<(typeof PAGE_TABS)[number]>("Answer");
@@ -180,6 +219,7 @@ export default function AskPage({ params }: { params: { id: string } }) {
   const [citations, setCitations] = useState<string[]>([]);
   const [provider, setProvider] = useState<string>("template");
   const [enginePayload, setEnginePayload] = useState<EnginePayload | null>(null);
+  const [derivation, setDerivation] = useState<Interpretation["derivation"]>(undefined);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -187,6 +227,7 @@ export default function AskPage({ params }: { params: { id: string } }) {
   const [chart, setChart] = useState<ChartData | null>(null);
   const [vargas, setVargas] = useState<VargaChart[]>([]);
   const [selectedVarga, setSelectedVarga] = useState("D1");
+  const [showDerivation, setShowDerivation] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -215,6 +256,8 @@ export default function AskPage({ params }: { params: { id: string } }) {
           setCitations(res.citations ?? []);
           setProvider(res.provider);
           setEnginePayload((res.enginePayload as EnginePayload) ?? null);
+          setDerivation(res.derivation);
+          setShowDerivation(false);
         } else {
           setError(interpretRes.reason?.message ?? "Interpretation failed.");
         }
@@ -271,6 +314,8 @@ export default function AskPage({ params }: { params: { id: string } }) {
       if (res.enginePayload) {
         setEnginePayload(res.enginePayload as EnginePayload);
       }
+      setDerivation(res.derivation);
+      setShowDerivation(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Question failed.");
     } finally {
@@ -420,6 +465,22 @@ export default function AskPage({ params }: { params: { id: string } }) {
                     <Anchor className="h-3 w-3 shrink-0" aria-hidden /> {c}
                   </span>
                 ))}
+              </div>
+            )}
+            {derivation && derivation.length > 0 && (
+              <div className="mt-4 border-t border-night-600/60 pt-3">
+                <button
+                  onClick={() => setShowDerivation(!showDerivation)}
+                  className="flex w-full items-center gap-2 text-left text-sm font-medium text-gold-300 transition hover:text-gold-200"
+                >
+                  <span>How this was derived</span>
+                  {showDerivation ? (
+                    <ChevronUp className="h-4 w-4 shrink-0" aria-hidden />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 shrink-0" aria-hidden />
+                  )}
+                </button>
+                {showDerivation && <div className="mt-3"><DerivationSteps steps={derivation} /></div>}
               </div>
             )}
           </div>

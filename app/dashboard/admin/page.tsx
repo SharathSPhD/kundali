@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Users } from "lucide-react";
+import { Search, Users, Zap } from "lucide-react";
 import Button from "@/components/ui/Button";
 import {
   ACCOUNT_TIERS,
@@ -10,6 +10,7 @@ import {
   getMyTier,
   type AccountTier,
 } from "@/lib/account";
+import { createClient } from "@/lib/supabase/client";
 
 export default function AdminPage() {
   const [myTier, setMyTier] = useState<AccountTier | null>(null);
@@ -21,10 +22,45 @@ export default function AdminPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
 
+  // GB10 Ollama gateway state
+  const [ollamaUrl, setOllamaUrl] = useState("");
+  const [ollamaDefaultModel, setOllamaDefaultModel] = useState("");
+  const [ollamaLoading, setOllamaLoading] = useState(true);
+  const [olllamaError, setOllamaError] = useState<string | null>(null);
+  const [ollamaNotice, setOllamaNotice] = useState<string | null>(null);
+  const [olllamaSaving, setOlllamaSaving] = useState(false);
+  const [ollamaReachable, setOllamaReachable] = useState<boolean | null>(null);
+  const [olllamaTesting, setOlllamaTesting] = useState(false);
+
   useEffect(() => {
     (async () => {
-      setMyTier(await getMyTier());
+      const tier = await getMyTier();
+      setMyTier(tier);
       setLoading(false);
+
+      // Load runtime config for GB10 Ollama
+      if (tier === "admin") {
+        const supabase = createClient();
+        if (supabase) {
+          try {
+            const { data, error: queryError } = await supabase
+              .from("runtime_config")
+              .select("key,value");
+            if (queryError) throw queryError;
+            if (data) {
+              const urlConfig = data.find((r) => r.key === "ollama_gateway_url");
+              const modelConfig = data.find(
+                (r) => r.key === "gb10_default_model"
+              );
+              setOllamaUrl(urlConfig?.value ?? "");
+              setOllamaDefaultModel(modelConfig?.value ?? "");
+            }
+          } catch (err) {
+            console.error("Failed to load runtime config:", err);
+          }
+          setOllamaLoading(false);
+        }
+      }
     })();
   }, []);
 
@@ -59,6 +95,62 @@ export default function AdminPage() {
     }
   }
 
+  async function saveOllamaConfig(key: string, value: string) {
+    setOlllamaSaving(true);
+    setOllamaError(null);
+    setOllamaNotice(null);
+    try {
+      const supabase = createClient();
+      if (!supabase) throw new Error("Supabase not configured");
+
+      const { error } = await supabase.rpc("admin_set_runtime_config", {
+        cfg_key: key,
+        cfg_value: value.trim() || null,
+      });
+
+      if (error) throw error;
+      setOllamaNotice(
+        value.trim()
+          ? `${key} saved.`
+          : `${key} deleted.`
+      );
+    } catch (err) {
+      setOllamaError(err instanceof Error ? err.message : "Failed to save.");
+    } finally {
+      setOlllamaSaving(false);
+    }
+  }
+
+  async function testOllamaGateway() {
+    if (!ollamaUrl.trim()) {
+      setOllamaError("Please enter a gateway URL first.");
+      return;
+    }
+
+    setOlllamaTesting(true);
+    setOllamaError(null);
+    setOllamaReachable(null);
+
+    // Reachability probe only: the gateway doesn't emit CORS headers, so a
+    // "cors" fetch would be blocked even when healthy. "no-cors" yields an
+    // opaque response — the body is unreadable, but a resolved fetch means
+    // the host answered; a network error or timeout means it didn't.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    try {
+      await fetch(`${ollamaUrl.trim()}/healthz`, {
+        mode: "no-cors",
+        signal: controller.signal,
+      });
+      setOllamaReachable(true);
+    } catch (err) {
+      setOllamaReachable(false);
+    } finally {
+      clearTimeout(timeout);
+      setOlllamaTesting(false);
+    }
+  }
+
   if (loading) return <p className="text-sm text-slate-500">Loading…</p>;
 
   if (myTier !== "admin") {
@@ -75,16 +167,20 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="max-w-xl space-y-6">
+    <div className="max-w-2xl space-y-6">
       <h1 className="flex items-center gap-2 font-display text-2xl font-bold text-slate-100">
         <Users className="h-5 w-5 shrink-0 text-gold-400" aria-hidden />
-        Manage users
+        Admin
       </h1>
-      <p className="text-xs text-slate-500">
-        Look up a user by email and set their tier. There is no separate
-        guest signup flow — a guest is simply an existing account an admin
-        has upgraded here.
-      </p>
+
+      <div className="space-y-4">
+        <h2 className="text-sm font-semibold text-slate-300">User management</h2>
+        <p className="text-xs text-slate-500">
+          Look up a user by email and set their tier. There is no separate
+          guest signup flow — a guest is simply an existing account an admin
+          has upgraded here.
+        </p>
+      </div>
 
       <div className="card space-y-3 p-5">
         <label className="label" htmlFor="admin-email">
@@ -141,6 +237,114 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+
+      <div className="space-y-4">
+        <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-300">
+          <Zap className="h-4 w-4 shrink-0" aria-hidden />
+          GB10 Ollama gateway
+        </h2>
+        <p className="text-xs text-slate-500">
+          This is how the deployed app reaches Ollama running on GB10. Run{" "}
+          <code className="rounded bg-night-800 px-1 py-0.5 text-[11px] font-mono text-gold-300">
+            gb10-gateway/deploy-local.sh
+          </code>{" "}
+          on GB10, expose it with{" "}
+          <code className="rounded bg-night-800 px-1 py-0.5 text-[11px] font-mono text-gold-300">
+            tailscale funnel --bg --https=8443 8100
+          </code>
+          , then set the URL here (e.g.{" "}
+          <code className="rounded bg-night-800 px-1 py-0.5 text-[11px] font-mono text-gold-300">
+            https://spark-5208.tailec14b1.ts.net:8443
+          </code>
+          ). Default model must be on the gateway allow-list (default:{" "}
+          <code className="rounded bg-night-800 px-1 py-0.5 text-[11px] font-mono text-gold-300">
+            qwen2.5:14b
+          </code>
+          ).
+        </p>
+      </div>
+
+      {!ollamaLoading && (
+        <div className="card space-y-4 p-5">
+          <div className="space-y-2">
+            <label className="label" htmlFor="ollama-url">
+              Gateway URL
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="ollama-url"
+                type="url"
+                className="input"
+                value={ollamaUrl}
+                onChange={(e) => setOllamaUrl(e.target.value)}
+                placeholder="https://spark-5208.tailec14b1.ts.net:8443"
+                disabled={olllamaSaving}
+              />
+              <button
+                className="btn-gold px-4 text-sm disabled:opacity-50"
+                onClick={() => saveOllamaConfig("ollama_gateway_url", ollamaUrl)}
+                disabled={olllamaSaving}
+              >
+                {olllamaSaving ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="label" htmlFor="ollama-model">
+              Default model
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="ollama-model"
+                type="text"
+                className="input"
+                value={ollamaDefaultModel}
+                onChange={(e) => setOllamaDefaultModel(e.target.value)}
+                placeholder="qwen2.5:14b"
+                disabled={olllamaSaving}
+              />
+              <button
+                className="btn-gold px-4 text-sm disabled:opacity-50"
+                onClick={() =>
+                  saveOllamaConfig("gb10_default_model", ollamaDefaultModel)
+                }
+                disabled={olllamaSaving}
+              >
+                {olllamaSaving ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              className="btn-ghost px-3 py-1.5 text-xs"
+              onClick={testOllamaGateway}
+              disabled={olllamaTesting || !ollamaUrl.trim()}
+            >
+              {olllamaTesting ? "Testing…" : "Test gateway"}
+            </button>
+            {ollamaReachable !== null && (
+              <span
+                className={`chip ${
+                  ollamaReachable
+                    ? "border-gold-600/60 text-gold-300"
+                    : "border-red-600/60 text-red-300"
+                }`}
+              >
+                {ollamaReachable ? "Reachable" : "Unreachable"}
+              </span>
+            )}
+          </div>
+
+          {olllamaError && (
+            <p className="text-sm text-red-300">{olllamaError}</p>
+          )}
+          {ollamaNotice && (
+            <p className="text-sm text-gold-300">{ollamaNotice}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

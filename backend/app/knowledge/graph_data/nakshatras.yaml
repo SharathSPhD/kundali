@@ -1,0 +1,33 @@
+# Nakshatra nodes (27). Vimshottari lords per BPHS dasha chapter; deity,
+# symbol, gana and purushartha (motivation) per the standard nakshatra
+# tradition (Brihat Samhita; Muhurta texts). `nature` is a one-line
+# distillation used in plain-language readings.
+source: BPHS vimshottari lords; Brihat Samhita nakshatra tradition
+nakshatras:
+  Ashwini:            { lord: Ketu,    deity: Ashvini Kumaras, symbol: horse's head,             gana: deva,     motivation: dharma, nature: swift, healing, pioneering energy }
+  Bharani:            { lord: Venus,   deity: Yama,            symbol: yoni,                     gana: manushya, motivation: artha,  nature: bearing, transformation, discipline through restraint }
+  Krittika:           { lord: Sun,     deity: Agni,            symbol: razor / flame,            gana: rakshasa, motivation: kama,   nature: sharp, purifying, cutting through to truth }
+  Rohini:             { lord: Moon,    deity: Prajapati,       symbol: ox-cart / chariot,        gana: manushya, motivation: moksha, nature: fertile, creative, growth and beauty }
+  Mrigashira:         { lord: Mars,    deity: Soma,            symbol: deer's head,              gana: deva,     motivation: moksha, nature: searching, curious, gentle seeking }
+  Ardra:              { lord: Rahu,    deity: Rudra,           symbol: teardrop,                 gana: manushya, motivation: kama,   nature: stormy, intense, renewal through upheaval }
+  Punarvasu:          { lord: Jupiter, deity: Aditi,           symbol: quiver of arrows,         gana: deva,     motivation: artha,  nature: return of light, renewal, expansiveness }
+  Pushya:             { lord: Saturn,  deity: Brihaspati,      symbol: cow's udder / lotus,      gana: deva,     motivation: dharma, nature: nourishing, protective, most auspicious for growth }
+  Ashlesha:           { lord: Mercury, deity: Nagas,           symbol: coiled serpent,           gana: rakshasa, motivation: dharma, nature: penetrating, hypnotic, kundalini energy }
+  Magha:              { lord: Ketu,    deity: Pitris,          symbol: royal throne,             gana: rakshasa, motivation: artha,  nature: ancestral authority, dignity, tradition }
+  Purva Phalguni:     { lord: Venus,   deity: Bhaga,           symbol: front legs of a bed,      gana: manushya, motivation: kama,   nature: pleasure, rest, creative enjoyment }
+  Uttara Phalguni:    { lord: Sun,     deity: Aryaman,         symbol: back legs of a bed,       gana: manushya, motivation: moksha, nature: patronage, contracts, steady generosity }
+  Hasta:              { lord: Moon,    deity: Savitar,         symbol: hand,                     gana: deva,     motivation: moksha, nature: skillful, dexterous, manifesting ability }
+  Chitra:             { lord: Mars,    deity: Tvashtar,        symbol: bright jewel / pearl,     gana: rakshasa, motivation: kama,   nature: brilliant, architectural, crafted beauty }
+  Swati:              { lord: Rahu,    deity: Vayu,            symbol: young shoot in the wind,  gana: deva,     motivation: artha,  nature: independent, flexible, self-made movement }
+  Vishakha:           { lord: Jupiter, deity: Indra-Agni,      symbol: triumphal arch,           gana: rakshasa, motivation: dharma, nature: determined, goal-fixed, victorious ambition }
+  Anuradha:           { lord: Saturn,  deity: Mitra,           symbol: lotus / staff,            gana: deva,     motivation: dharma, nature: friendship, devotion, success in foreign places }
+  Jyeshtha:           { lord: Mercury, deity: Indra,           symbol: earring / umbrella,       gana: rakshasa, motivation: artha,  nature: seniority, protectiveness, occult courage }
+  Mula:               { lord: Ketu,    deity: Nirriti,         symbol: bunch of roots,           gana: rakshasa, motivation: kama,   nature: uprooting, investigative, going to the root }
+  Purva Ashadha:      { lord: Venus,   deity: Apas,            symbol: winnowing fan,            gana: manushya, motivation: moksha, nature: invigorating, declarative, early victory }
+  Uttara Ashadha:     { lord: Sun,     deity: Vishvadevas,     symbol: elephant tusk,            gana: manushya, motivation: moksha, nature: enduring, universal, final victory }
+  Shravana:           { lord: Moon,    deity: Vishnu,          symbol: ear / three footprints,   gana: deva,     motivation: artha,  nature: listening, learning, connecting through word }
+  Dhanishta:          { lord: Mars,    deity: Eight Vasus,     symbol: drum,                     gana: rakshasa, motivation: dharma, nature: rhythmic, wealthy, adaptable performance }
+  Shatabhisha:        { lord: Rahu,    deity: Varuna,          symbol: empty circle / 100 stars, gana: rakshasa, motivation: dharma, nature: secretive, healing, vast solitary vision }
+  Purva Bhadrapada:   { lord: Jupiter, deity: Aja Ekapada,     symbol: front of a funeral cot,   gana: manushya, motivation: artha,  nature: intense, penance, raising spiritual fire }
+  Uttara Bhadrapada:  { lord: Saturn,  deity: Ahir Budhnya,    symbol: back of a funeral cot,    gana: manushya, motivation: moksha, nature: deep, contained, serpent of the depths }
+  Revati:             { lord: Mercury, deity: Pushan,          symbol: fish / drum,              gana: deva,     motivation: moksha, nature: nourishing journeys, safe passage, completion }

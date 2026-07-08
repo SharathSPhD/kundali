@@ -120,6 +120,15 @@ export interface Interpretation {
   verificationWarnings: string[];
   /** Full deterministic engine JSON when returned by /interpret. */
   enginePayload: Record<string, unknown> | null;
+  /** Derivation chain: steps showing claim → rule → source. */
+  derivation?: Array<{
+    claim: string;
+    rule: string;
+    source: string;
+    facts: string[];
+  }>;
+  /** Answer classification: e.g. "area", "entity", "remedy", "strength". */
+  answer_kind?: string;
 }
 
 export interface ChatTurn {
@@ -286,6 +295,48 @@ export interface RectificationEventInput {
 }
 
 // ---------------------------------------------------------------------------
+// Knowledge graph types
+// ---------------------------------------------------------------------------
+
+export interface KnowledgeNode {
+  id: string;
+  kind: string;
+  name: string;
+  attrs: Record<string, unknown>;
+  edges_out: Array<{
+    rel: string;
+    dst: string;
+    attrs: Record<string, unknown>;
+  }>;
+  edges_in: Array<{
+    rel: string;
+    src: string;
+    attrs: Record<string, unknown>;
+  }>;
+}
+
+export interface KnowledgeGraphSubgraph {
+  nodes: Array<{
+    id: string;
+    kind: string;
+    name: string;
+    attrs: Record<string, unknown>;
+  }>;
+  edges: Array<{
+    src: string;
+    rel: string;
+    dst: string;
+    attrs: Record<string, unknown>;
+  }>;
+}
+
+export interface KnowledgeStats {
+  n_nodes: number;
+  n_edges: number;
+  node_kinds: Record<string, number>;
+}
+
+// ---------------------------------------------------------------------------
 // Low-level fetch through the proxy
 // ---------------------------------------------------------------------------
 
@@ -297,7 +348,7 @@ export class EngineError extends Error {
   }
 }
 
-async function post(path: string, body: unknown): Promise<any> {
+async function getHeaders(): Promise<Record<string, string>> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -315,10 +366,49 @@ async function post(path: string, body: unknown): Promise<any> {
   } catch {
     /* local mode / no session */
   }
+  return headers;
+}
+
+async function post(path: string, body: unknown): Promise<any> {
+  const headers = await getHeaders();
   const res = await fetch(`/api/py/${path}`, {
     method: "POST",
     headers,
     body: JSON.stringify(body),
+  });
+  const text = await res.text();
+  let json: any = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    /* non-JSON error body */
+  }
+  if (!res.ok) {
+    const detail =
+      (json && (json.detail || json.error || json.message)) ||
+      text ||
+      `Engine request failed (${res.status})`;
+    throw new EngineError(
+      typeof detail === "string" ? detail : JSON.stringify(detail),
+      res.status
+    );
+  }
+  return json;
+}
+
+async function get(path: string, query?: Record<string, any>): Promise<any> {
+  const headers = await getHeaders();
+  const url = new URL(`/api/py/${path}`, typeof window !== "undefined" ? window.location.origin : "http://localhost");
+  if (query) {
+    for (const [key, value] of Object.entries(query)) {
+      if (value !== undefined && value !== null) {
+        url.searchParams.append(key, String(value));
+      }
+    }
+  }
+  const res = await fetch(url.toString(), {
+    method: "GET",
+    headers,
   });
   const text = await res.text();
   let json: any = null;
@@ -631,6 +721,16 @@ function normalizeInterpretation(raw: any): Interpretation {
         ? c
         : str(pick(c, "text", "label", "fact", "id"), JSON.stringify(c))
   );
+  const derivationRaw = asArray(pick(raw, "derivation", "derivations"));
+  const derivation =
+    derivationRaw.length > 0
+      ? derivationRaw.map((d: any) => ({
+          claim: str(pick(d, "claim"), ""),
+          rule: str(pick(d, "rule"), ""),
+          source: str(pick(d, "source"), ""),
+          facts: asArray(pick(d, "facts")),
+        }))
+      : undefined;
   return {
     text,
     citations,
@@ -652,6 +752,8 @@ function normalizeInterpretation(raw: any): Interpretation {
       raw?.engine_payload ?? raw?.enginePayload
         ? (raw.engine_payload ?? raw.enginePayload)
         : null,
+    derivation,
+    answer_kind: pick(raw, "answer_kind", "answerKind"),
   };
 }
 
@@ -977,6 +1079,49 @@ export async function fetchMatching(
   return normalizeMatching(await post("matching", { groom, bride }));
 }
 
+export interface MuhurtaReason {
+  factor: string;
+  verdict: string;
+  detail: string;
+  source: string;
+}
+
+export interface MuhurtaDay {
+  date: string;
+  score: number;
+  vara: string;
+  vara_sanskrit: string;
+  tithi: string;
+  nakshatra: string;
+  tara: string;
+  favorable: boolean;
+  reasons: MuhurtaReason[];
+}
+
+export interface MuhurtaResult {
+  activity: string;
+  from: string;
+  days: number;
+  janma_nakshatra: string;
+  note: string;
+  best: MuhurtaDay[];
+  all: MuhurtaDay[];
+}
+
+export async function fetchMuhurta(
+  birth: BirthData,
+  activity: string,
+  fromDate?: string,
+  days = 30
+): Promise<MuhurtaResult> {
+  return (await post("muhurta", {
+    birth,
+    activity,
+    from_date: fromDate,
+    days,
+  })) as MuhurtaResult;
+}
+
 export async function fetchShadbala(birth: BirthData): Promise<ShadbalaRow[]> {
   return normalizeShadbala(await post("shadbala", { birth }));
 }
@@ -1017,4 +1162,24 @@ export async function interpret(
   return normalizeInterpretation(
     await post("interpret", { birth, question, provider, history })
   );
+}
+
+// Knowledge graph API
+
+export async function fetchKnowledgeGraph(
+  focus?: string,
+  depth?: number
+): Promise<KnowledgeGraphSubgraph> {
+  return (await get("knowledge/graph", { focus, depth })) as KnowledgeGraphSubgraph;
+}
+
+export async function fetchKnowledgeNode(
+  kind: string,
+  name: string
+): Promise<KnowledgeNode> {
+  return (await get(`knowledge/node/${kind}/${encodeURIComponent(name)}`)) as KnowledgeNode;
+}
+
+export async function fetchKnowledgeStats(): Promise<KnowledgeStats> {
+  return (await get("knowledge/stats")) as KnowledgeStats;
 }

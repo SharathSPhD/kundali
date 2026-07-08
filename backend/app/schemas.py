@@ -81,6 +81,14 @@ class PanchangaRequest(BaseModel):
     config: Optional[EngineConfigModel] = None
 
 
+class MuhurtaRequest(BaseModel):
+    birth: BirthDataModel
+    activity: str
+    from_date: Optional[str] = None  # ISO date; defaults to today
+    days: int = 30
+    config: Optional[EngineConfigModel] = None
+
+
 class MatchingRequest(BaseModel):
     groom: BirthDataModel
     bride: BirthDataModel
@@ -153,3 +161,8 @@ class InterpretResponse(BaseModel):
     verified: Optional[bool] = None
     rejected_claims: list[dict[str, Any]] = []
     verification_warnings: list[str] = []
+    # Knowledge-graph Q&A: the derivation chain behind a deterministic
+    # answer — each step binds a cited classical rule to a computed chart
+    # fact ({claim, rule, source, facts}).
+    derivation: list[dict[str, Any]] = []
+    answer_kind: Optional[str] = None

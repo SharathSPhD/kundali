@@ -19,6 +19,15 @@ def _user(token="tok-abc"):
 
 
 @pytest.fixture(autouse=True)
+def _no_runtime_config(monkeypatch):
+    """`_gb10_provider` consults the Supabase-backed runtime_config when env
+    vars are absent; stub it empty (and reset its cache) so these tests never
+    make live REST calls. Tests that exercise the fallback override this."""
+    monkeypatch.setattr(gateway, "_runtime_config", lambda: {})
+    gateway._RUNTIME_CONFIG_CACHE.update(values=None, fetched_at=0.0)
+
+
+@pytest.fixture(autouse=True)
 def _fake_public_dns(monkeypatch):
     """Every BYOK base_url in this file resolves through
     `assert_safe_user_base_url`'s DNS check; stub it to a fake public
@@ -93,6 +102,79 @@ def test_admin_tier_without_gateway_url_configured_is_blocked(monkeypatch):
 
     with pytest.raises(gateway.ProviderBlocked):
         gateway.resolve_provider(_user())
+
+
+def test_admin_tier_falls_back_to_runtime_config_and_user_jwt(monkeypatch):
+    """Out-of-the-box path: no GB10 env vars anywhere. The gateway URL and
+    model come from the Supabase `runtime_config` table and the caller's own
+    Supabase JWT is forwarded as the bearer credential — the GB10 gateway
+    verifies it and checks the tier itself."""
+    monkeypatch.setattr(gateway, "get_user_credential", lambda token, name: None)
+    monkeypatch.setattr(gateway, "get_user_tier", lambda token, user_id: "admin")
+    monkeypatch.delenv("OLLAMA_GATEWAY_URL", raising=False)
+    monkeypatch.delenv("GB10_INTERNAL_SECRET", raising=False)
+    monkeypatch.delenv("GB10_MODEL", raising=False)
+    monkeypatch.setattr(
+        gateway,
+        "_runtime_config",
+        lambda: {
+            "ollama_gateway_url": "https://gb10.example.net:8443",
+            "gb10_default_model": "qwen2.5:14b",
+        },
+    )
+
+    provider, via = gateway.resolve_provider(_user(token="user-jwt-token"))
+
+    assert isinstance(provider, OllamaProvider)
+    assert provider.base_url == "https://gb10.example.net:8443"
+    assert provider.api_key == "user-jwt-token"
+    assert provider.model == "qwen2.5:14b"
+    assert "GB10" in via
+
+
+def test_guest_tier_falls_back_to_runtime_config_and_user_jwt(monkeypatch):
+    monkeypatch.setattr(gateway, "get_user_credential", lambda token, name: None)
+    monkeypatch.setattr(gateway, "get_user_tier", lambda token, user_id: "guest")
+    monkeypatch.delenv("OLLAMA_GATEWAY_URL", raising=False)
+    monkeypatch.delenv("GB10_INTERNAL_SECRET", raising=False)
+    monkeypatch.setattr(
+        gateway, "_runtime_config", lambda: {"ollama_gateway_url": "https://gb10.example.net:8443"}
+    )
+
+    provider, _via = gateway.resolve_provider(_user(token="guest-jwt"))
+
+    assert isinstance(provider, OllamaProvider)
+    assert provider.api_key == "guest-jwt"
+
+
+def test_env_vars_still_win_over_runtime_config(monkeypatch):
+    monkeypatch.setattr(gateway, "get_user_credential", lambda token, name: None)
+    monkeypatch.setattr(gateway, "get_user_tier", lambda token, user_id: "admin")
+    monkeypatch.setenv("OLLAMA_GATEWAY_URL", "https://env-wins.example.com")
+    monkeypatch.setenv("GB10_INTERNAL_SECRET", "env-secret")
+    monkeypatch.setattr(
+        gateway, "_runtime_config", lambda: {"ollama_gateway_url": "https://db.example.com"}
+    )
+
+    provider, _via = gateway.resolve_provider(_user())
+
+    assert provider.base_url == "https://env-wins.example.com"
+    assert provider.api_key == "env-secret"
+
+
+def test_admin_with_no_token_and_no_secret_is_blocked(monkeypatch):
+    """No shared secret and no JWT to forward -> cleanly blocked, never an
+    unauthenticated call to the gateway."""
+    monkeypatch.setattr(gateway, "get_user_credential", lambda token, name: None)
+    monkeypatch.setattr(gateway, "get_user_tier", lambda token, user_id: "admin")
+    monkeypatch.delenv("GB10_INTERNAL_SECRET", raising=False)
+    monkeypatch.delenv("OLLAMA_GATEWAY_URL", raising=False)
+    monkeypatch.setattr(
+        gateway, "_runtime_config", lambda: {"ollama_gateway_url": "https://gb10.example.net"}
+    )
+
+    with pytest.raises(gateway.ProviderBlocked):
+        gateway.resolve_provider({"sub": "user-1", "token": None})
 
 
 def test_requested_provider_restricts_byok_lookup_to_that_provider(monkeypatch):

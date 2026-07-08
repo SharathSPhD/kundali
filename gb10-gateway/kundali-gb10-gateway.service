@@ -4,17 +4,16 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=%h/projects/kundali/gb10-gateway
-ExecStart=%h/projects/kundali/gb10-gateway/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8100
+# deploy-local.sh installs the gateway to this runtime dir (decoupled from
+# the git checkout so branch switches / worktrees never break the service).
+WorkingDirectory=%h/.local/share/kundali-gb10-gateway
+ExecStart=%h/.local/share/kundali-gb10-gateway/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8100
 Restart=on-failure
 RestartSec=5
-# Fill these in (or better, source them from an untracked env file via
-# EnvironmentFile= below) before enabling this unit.
-Environment=OLLAMA_URL=http://localhost:11434
-Environment=GB10_ALLOWED_MODELS=llama3.1:8b,qwen2.5:14b
-Environment=GB10_INTERNAL_SECRET=REPLACE_ME
-Environment=GB10_PAID_SECRET=REPLACE_ME_PLACEHOLDER
-# EnvironmentFile=%h/projects/kundali/gb10-gateway/.env
+# Secrets + Supabase coordinates live in an untracked env file created by
+# deploy-local.sh (GB10_INTERNAL_SECRET, GB10_PAID_SECRET, SUPABASE_URL,
+# SUPABASE_ANON_KEY, GB10_ALLOWED_MODELS, OLLAMA_URL).
+EnvironmentFile=%h/.local/share/kundali-gb10-gateway/gateway.env
 
 [Install]
 WantedBy=default.target

@@ -1,0 +1,88 @@
+# Bhava (house) nodes. Significations per BPHS "Judgement of Houses"
+# (ch. 11–24 in common editions); bhava karakas per the standard Parashari
+# attribution; classification per classical convention.
+bhavas:
+  1:
+    sanskrit: Tanu Bhava
+    aliases: [first house, 1st house, lagna, ascendant, tanu]
+    significations: [self, body, vitality, appearance, temperament, beginnings, overall life direction]
+    karakas: [Sun]
+    classification: [kendra, trikona]
+    source: BPHS judgement of houses
+  2:
+    sanskrit: Dhana Bhava
+    aliases: [second house, 2nd house, dhana, kutumba]
+    significations: [wealth, accumulated assets, speech, food, family of birth, face, early education]
+    karakas: [Jupiter]
+    classification: [maraka]
+    source: BPHS judgement of houses
+  3:
+    sanskrit: Sahaja Bhava
+    aliases: [third house, 3rd house, sahaja, parakrama]
+    significations: [courage, younger siblings, communication, short journeys, skills of the hands, effort]
+    karakas: [Mars]
+    classification: [upachaya]
+    source: BPHS judgement of houses
+  4:
+    sanskrit: Sukha Bhava
+    aliases: [fourth house, 4th house, sukha, bandhu, matru]
+    significations: [mother, home, land, vehicles, inner happiness, basic education, homeland]
+    karakas: [Moon, Mercury]
+    classification: [kendra]
+    source: BPHS judgement of houses
+  5:
+    sanskrit: Putra Bhava
+    aliases: [fifth house, 5th house, putra, vidya]
+    significations: [children, intelligence, creativity, romance, past-life merit (purva punya), mantra, speculation]
+    karakas: [Jupiter]
+    classification: [trikona]
+    source: BPHS judgement of houses
+  6:
+    sanskrit: Ari Bhava
+    aliases: [sixth house, 6th house, ari, roga, shatru]
+    significations: [disease, enemies, debts, litigation, service, daily work, competition, obstacles overcome]
+    karakas: [Mars, Saturn]
+    classification: [dusthana, upachaya]
+    source: BPHS judgement of houses
+  7:
+    sanskrit: Yuvati Bhava
+    aliases: [seventh house, 7th house, yuvati, kalatra]
+    significations: [marriage, spouse, partnerships, trade, public dealings, foreign residence]
+    karakas: [Venus]
+    classification: [kendra, maraka]
+    source: BPHS judgement of houses
+  8:
+    sanskrit: Randhra Bhava
+    aliases: [eighth house, 8th house, randhra, ayu, mrityu]
+    significations: [longevity, transformation, inheritance, occult, sudden events, chronic disease, spouse's wealth]
+    karakas: [Saturn]
+    classification: [dusthana]
+    source: BPHS judgement of houses
+  9:
+    sanskrit: Dharma Bhava
+    aliases: [ninth house, 9th house, dharma, bhagya, pitru]
+    significations: [fortune, dharma, father, guru, higher learning, long journeys, grace, philosophy]
+    karakas: [Jupiter, Sun]
+    classification: [trikona]
+    source: BPHS judgement of houses
+  10:
+    sanskrit: Karma Bhava
+    aliases: [tenth house, 10th house, karma, rajya]
+    significations: [career, profession, status, authority, public life, karma in the world, government]
+    karakas: [Sun, Mercury, Jupiter, Saturn]
+    classification: [kendra, upachaya]
+    source: BPHS judgement of houses
+  11:
+    sanskrit: Labha Bhava
+    aliases: [eleventh house, 11th house, labha]
+    significations: [gains, income, fulfillment of desires, elder siblings, friends, networks]
+    karakas: [Jupiter]
+    classification: [upachaya]
+    source: BPHS judgement of houses
+  12:
+    sanskrit: Vyaya Bhava
+    aliases: [twelfth house, 12th house, vyaya, moksha sthana]
+    significations: [loss, expenditure, foreign lands, isolation, sleep, liberation (moksha), hospitals, hidden matters]
+    karakas: [Saturn, Ketu]
+    classification: [dusthana]
+    source: BPHS judgement of houses

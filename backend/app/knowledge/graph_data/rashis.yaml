@@ -1,0 +1,16 @@
+# Rashi (sign) nodes. Lordships, tattva, mobility per BPHS ch. 4
+# ("Rashi characteristics").
+rashis:
+  Aries:       { sanskrit: Mesha,      aliases: [aries, mesha],            lord: Mars,    tattva: fire,  mobility: chara,        gender: male,   rises: back }
+  Taurus:      { sanskrit: Vrishabha,  aliases: [taurus, vrishabha],       lord: Venus,   tattva: earth, mobility: sthira,       gender: female, rises: back }
+  Gemini:      { sanskrit: Mithuna,    aliases: [gemini, mithuna],         lord: Mercury, tattva: air,   mobility: dvisvabhava,  gender: male,   rises: head }
+  Cancer:      { sanskrit: Karka,      aliases: [cancer, karka, karkata],  lord: Moon,    tattva: water, mobility: chara,        gender: female, rises: back }
+  Leo:         { sanskrit: Simha,      aliases: [leo, simha],              lord: Sun,     tattva: fire,  mobility: sthira,       gender: male,   rises: head }
+  Virgo:       { sanskrit: Kanya,      aliases: [virgo, kanya],            lord: Mercury, tattva: earth, mobility: dvisvabhava,  gender: female, rises: head }
+  Libra:       { sanskrit: Tula,       aliases: [libra, tula],             lord: Venus,   tattva: air,   mobility: chara,        gender: male,   rises: head }
+  Scorpio:     { sanskrit: Vrischika,  aliases: [scorpio, vrischika],      lord: Mars,    tattva: water, mobility: sthira,       gender: female, rises: head }
+  Sagittarius: { sanskrit: Dhanu,      aliases: [sagittarius, dhanu],      lord: Jupiter, tattva: fire,  mobility: dvisvabhava,  gender: male,   rises: back }
+  Capricorn:   { sanskrit: Makara,     aliases: [capricorn, makara],       lord: Saturn,  tattva: earth, mobility: chara,        gender: female, rises: back }
+  Aquarius:    { sanskrit: Kumbha,     aliases: [aquarius, kumbha],        lord: Saturn,  tattva: air,   mobility: sthira,       gender: male,   rises: head }
+  Pisces:      { sanskrit: Meena,      aliases: [pisces, meena],           lord: Jupiter, tattva: water, mobility: dvisvabhava,  gender: female, rises: both }
+source: BPHS rashi characteristics (ch. 4)
