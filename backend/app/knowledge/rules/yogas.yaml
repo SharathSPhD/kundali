@@ -28,3 +28,128 @@ yogas:
     rule_description: All seven classical planets hemmed between Rahu and Ketu
       on one side of the nodal axis.
     source: classical nodal dosha tradition; variant definitions exist
+
+  - name: Ruchaka Yoga
+    sanskrit_category: Pancha Mahapurusha
+    rule_description: Mars in own sign or exaltation, occupying a kendra (1,4,7,10) from lagna.
+    effects: courage, command, physical vigor; a leader among people.
+    source: BPHS Pancha Mahapurusha yogas
+
+  - name: Bhadra Yoga
+    sanskrit_category: Pancha Mahapurusha
+    rule_description: Mercury in own sign or exaltation, occupying a kendra from lagna.
+    effects: sharp intellect, eloquence, success in commerce and learning.
+    source: BPHS Pancha Mahapurusha yogas
+
+  - name: Hamsa Yoga
+    sanskrit_category: Pancha Mahapurusha
+    rule_description: Jupiter in own sign or exaltation, occupying a kendra from lagna.
+    effects: wisdom, righteousness, respect of the learned; a noble disposition.
+    source: BPHS Pancha Mahapurusha yogas
+
+  - name: Malavya Yoga
+    sanskrit_category: Pancha Mahapurusha
+    rule_description: Venus in own sign or exaltation, occupying a kendra from lagna.
+    effects: comforts, artistic refinement, vehicles and marital happiness.
+    source: BPHS Pancha Mahapurusha yogas
+
+  - name: Shasha Yoga
+    sanskrit_category: Pancha Mahapurusha
+    rule_description: Saturn in own sign or exaltation, occupying a kendra from lagna.
+    effects: authority over others, discipline, gains through service and organization.
+    source: BPHS Pancha Mahapurusha yogas
+
+  - name: Harsha (Viparita Raja) Yoga
+    sanskrit_category: Viparita Raja
+    rule_description: The 6th lord placed in a dusthana (6, 8 or 12).
+    effects: gains through adversity reversed — enemies and disease lose their grip.
+    source: Phaladeepika viparita raja yogas
+
+  - name: Sarala (Viparita Raja) Yoga
+    sanskrit_category: Viparita Raja
+    rule_description: The 8th lord placed in a dusthana (6, 8 or 12).
+    effects: resilience through crises; longevity and fearlessness.
+    source: Phaladeepika viparita raja yogas
+
+  - name: Vimala (Viparita Raja) Yoga
+    sanskrit_category: Viparita Raja
+    rule_description: The 12th lord placed in a dusthana (6, 8 or 12).
+    effects: frugality turned to strength; independence and good conduct.
+    source: Phaladeepika viparita raja yogas
+
+  - name: Shakata Yoga
+    sanskrit_category: Chandra dosha
+    rule_description: Moon in the 6th, 8th or 12th from Jupiter.
+    effects: fluctuating fortunes; periodic reversals that rebuild.
+    source: classical Chandra yoga tradition
+
+  - name: Adhi Yoga
+    sanskrit_category: Chandra yoga
+    rule_description: Benefics occupying the 6th, 7th and 8th from the Moon.
+    effects: leadership, prosperity and dependable allies.
+    source: classical Chandra yoga tradition (Brihat Jataka)
+
+  - name: Vesi Yoga
+    sanskrit_category: Surya yoga
+    rule_description: A planet (other than Moon/nodes) in the 2nd from the Sun.
+    effects: balanced speech and steady fortunes.
+    source: classical Surya yoga tradition
+
+  - name: Vosi Yoga
+    sanskrit_category: Surya yoga
+    rule_description: A planet (other than Moon/nodes) in the 12th from the Sun.
+    effects: skillful, charitable, learned disposition.
+    source: classical Surya yoga tradition
+
+  - name: Ubhayachari Yoga
+    sanskrit_category: Surya yoga
+    rule_description: Planets (other than Moon/nodes) on both sides of the Sun (2nd and 12th).
+    effects: eloquent, wealthy, well-liked; a balanced life.
+    source: classical Surya yoga tradition
+
+  - name: Sunapha Yoga
+    sanskrit_category: Chandra yoga
+    rule_description: A planet (other than Sun/nodes) in the 2nd from the Moon.
+    effects: self-earned wealth and a composed intellect.
+    source: classical Chandra yoga tradition (Brihat Jataka)
+
+  - name: Anapha Yoga
+    sanskrit_category: Chandra yoga
+    rule_description: A planet (other than Sun/nodes) in the 12th from the Moon.
+    effects: health, character and renown without arrogance.
+    source: classical Chandra yoga tradition (Brihat Jataka)
+
+  - name: Durudhara Yoga
+    sanskrit_category: Chandra yoga
+    rule_description: Planets (other than Sun/nodes) on both sides of the Moon.
+    effects: enjoyments, resources and generous spirit.
+    source: classical Chandra yoga tradition (Brihat Jataka)
+
+  - name: Neecha Bhanga
+    sanskrit_category: Neecha Bhanga Raja
+    rule_description: A debilitated planet whose debilitation is cancelled — its
+      dispositor or exaltation-sign lord in a kendra from lagna/Moon, or conjunction
+      with an exalted planet.
+    effects: early struggle transmuted into unusual rise; the flaw becomes the engine.
+    source: classical neecha-bhanga rules (Phaladeepika / Saravali)
+
+  - name: Raja Yoga
+    sanskrit_category: Raja
+    rule_description: A kendra lord and a trikona lord linked by conjunction, mutual
+      aspect or parivartana (exchange of signs).
+    effects: authority, status and success proportional to the lords' strength.
+    source: BPHS raja yoga chapters
+
+  - name: Dhana Yoga
+    sanskrit_category: Dhana
+    rule_description: Lords of wealth houses (2, 11) linked with lords of fortune
+      houses (5, 9) — or with each other — by conjunction, aspect or exchange.
+    effects: accumulation of wealth through the linked houses' significations.
+    source: BPHS dhana yoga chapters
+
+  - name: Lakshmi Yoga
+    sanskrit_category: Dhana
+    rule_description: The 9th lord dignified (own/exaltation/moolatrikona) in a kendra
+      or trikona while Venus is strong and uncombust.
+    effects: fortune, grace and abundance; wealth with refinement.
+    source: classical Lakshmi yoga definition (Phaladeepika)

@@ -202,6 +202,19 @@ def resolve_provider(
         if provider:
             return provider, "Kundali (GB10)"
 
+    if tier in ("admin", "guest", "paid"):
+        # This tier *should* have gateway access — the block is a deployment
+        # gap (no gateway URL registered), not a account limitation. Say so.
+        raise ProviderBlocked(
+            reason=(
+                f"Your account tier ({tier}) includes AI chat, but no GB10 "
+                "gateway is registered. An admin should start the gateway on "
+                "GB10 (gb10-gateway/deploy-local.sh + tailscale funnel) and "
+                "set its URL under Admin → GB10 gateway. Deterministic Ask "
+                "answers still work meanwhile."
+            ),
+            upgrade_hint="gateway_not_configured",
+        )
     raise ProviderBlocked(
         reason=(
             f"Your account ({tier}) has no inference access configured. "
