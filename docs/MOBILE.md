@@ -1,5 +1,27 @@
 # Mobile (iOS/Android) via Capacitor
 
+> **Status (2026-07-08): the pipeline below is BUILT and running.**
+> The repo contains the Capacitor projects (`android/`, `ios/`,
+> `capacitor.config.ts` pointing at https://kundali-five.vercel.app) and a
+> CI workflow (`.github/workflows/mobile-build.yml`) that produces on every
+> relevant push to main (or manual dispatch):
+>
+> - `kundali-android` artifact — **signed release AAB** (Play Store upload
+>   format) + **signed APK** (direct install), signed with the release
+>   keystore held in repo secrets (`ANDROID_KEYSTORE_*`; original keystore
+>   kept off-repo on GB10 at `~/.local/share/kundali-android/` — do not
+>   lose it, Play requires the same key for every update).
+> - `kundali-ios-unsigned-archive` — an `.xcarchive` built without signing.
+>
+> **What still needs a human (payment + legal identity, cannot be automated):**
+> 1. Google Play Console account ($25 one-time) → create app
+>    `com.technektar.kundali` → upload the AAB from CI → store listing →
+>    review (~hours-days).
+> 2. Apple Developer Program ($99/yr) → import the xcarchive in Xcode (or
+>    re-run archive with signing certs) → App Store Connect upload →
+>    review. iOS signing can be added to CI later with fastlane once
+>    certificates exist.
+
 ## Overview
 
 Kundali can be packaged as a native iOS and Android app using [Capacitor](https://capacitorjs.com/), which wraps the deployed Next.js web app. This approach:
