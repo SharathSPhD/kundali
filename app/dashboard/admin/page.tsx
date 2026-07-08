@@ -131,20 +131,22 @@ export default function AdminPage() {
     setOllamaError(null);
     setOllamaReachable(null);
 
+    // Reachability probe only: the gateway doesn't emit CORS headers, so a
+    // "cors" fetch would be blocked even when healthy. "no-cors" yields an
+    // opaque response — the body is unreadable, but a resolved fetch means
+    // the host answered; a network error or timeout means it didn't.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-
-      const response = await fetch(`${ollamaUrl.trim()}/healthz`, {
-        mode: "cors",
+      await fetch(`${ollamaUrl.trim()}/healthz`, {
+        mode: "no-cors",
         signal: controller.signal,
       });
-
-      clearTimeout(timeout);
       setOllamaReachable(true);
     } catch (err) {
       setOllamaReachable(false);
     } finally {
+      clearTimeout(timeout);
       setOlllamaTesting(false);
     }
   }

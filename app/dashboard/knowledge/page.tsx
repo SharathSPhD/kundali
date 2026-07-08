@@ -29,7 +29,9 @@ const NODE_KIND_ORDER: Record<string, number> = {
 };
 
 function sortNodesByKind(nodes: NodeEntry[]): NodeEntry[] {
-  return nodes.sort((a, b) => {
+  // Copy before sorting — the input is derived from React state and
+  // Array.prototype.sort mutates in place.
+  return [...nodes].sort((a, b) => {
     const aOrder = NODE_KIND_ORDER[a.kind] ?? 99;
     const bOrder = NODE_KIND_ORDER[b.kind] ?? 99;
     if (aOrder !== bOrder) return aOrder - bOrder;

@@ -56,7 +56,9 @@ function getActiveDashaPath(dashas: DashaPeriod[]): DashaPeriod[] {
 }
 
 function getTopPredictions(predictions: Prediction[]): Prediction[] {
-  return predictions
+  // Copy before sorting — `predictions` comes from React state and
+  // Array.prototype.sort mutates in place.
+  return [...predictions]
     .sort((a, b) => Math.abs(b.score) - Math.abs(a.score))
     .slice(0, 3);
 }

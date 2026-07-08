@@ -29,6 +29,7 @@ import os
 import time
 from typing import Any, Optional
 
+import anyio.to_thread
 import httpx
 from fastapi import FastAPI, Header, HTTPException, Response
 
@@ -135,13 +136,16 @@ def _jwt_tier(token: str) -> Optional[str]:
     return tier
 
 
-def _require_auth(authorization: str) -> None:
+async def _require_auth(authorization: str) -> None:
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="missing bearer token")
     token = authorization.removeprefix("Bearer ").strip()
     if _valid_secret(token):
         return
-    tier = _jwt_tier(token)
+    # _jwt_tier does synchronous HTTP (introspection + tier lookup, cached);
+    # run it in a worker thread so it never blocks the event loop under
+    # concurrent chat requests.
+    tier = await anyio.to_thread.run_sync(_jwt_tier, token)
     if tier in ALLOWED_TIERS:
         return
     if tier is not None:
@@ -161,9 +165,9 @@ def healthz() -> dict:
 
 
 @app.get("/api/models")
-def models(authorization: str = Header(default="")) -> dict:
+async def models(authorization: str = Header(default="")) -> dict:
     """Authenticated: which models this gateway will serve (for pickers)."""
-    _require_auth(authorization)
+    await _require_auth(authorization)
     return {"models": sorted(ALLOWED_MODELS)}
 
 
@@ -173,7 +177,7 @@ async def chat(body: dict[str, Any], authorization: str = Header(default="")) ->
     Vercel backend talks to this exact endpoint whether it's pointed at
     localhost (dev) or this gateway (prod), just with a different
     `base_url`/`api_key`."""
-    _require_auth(authorization)
+    await _require_auth(authorization)
     model = body.get("model")
     if ALLOWED_MODELS and model not in ALLOWED_MODELS:
         raise HTTPException(

@@ -46,10 +46,18 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Fetch: cache-first for static, network-first for others (never cache API)
+// Fetch: cache-first for static, network-first for others (never cache API).
+// Only same-origin GET requests are ever cached — cross-origin calls (e.g.
+// Supabase auth/REST) and non-GET methods pass straight through, both to
+// avoid caching sensitive responses and because Cache.put() throws on
+// non-GET requests.
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
+
+  if (request.method !== "GET" || url.origin !== self.location.origin) {
+    return; // default browser handling, no SW interception
+  }
 
   // Never cache API responses
   if (url.pathname.startsWith("/api/")) {
@@ -86,10 +94,10 @@ self.addEventListener("fetch", (event) => {
         cache.then((c) => c.put(request, response.clone()));
         return response;
       })
-      .catch(() => {
+      .catch(async () => {
         return (
-          caches.match(request) ||
-          caches.match("/offline.html") ||
+          (await caches.match(request)) ||
+          (await caches.match("/offline.html")) ||
           new Response("Offline", {
             status: 503,
             statusText: "Service Unavailable",

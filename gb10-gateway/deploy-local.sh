@@ -31,6 +31,24 @@ if [ ! -f "$ENV_FILE" ]; then
   chmod 600 "$ENV_FILE"
 fi
 
+# Supabase coordinates for the gateway's JWT-tier auth path. Nothing is
+# baked into the repo: take them from the caller's environment, falling
+# back to the untracked .env.production at the repo root (the same file
+# the frontend deploy uses locally). The anon key is publishable by
+# design, but keeping it out of git avoids coupling forks/other envs to
+# one Supabase project.
+_env_from_dotfile() {
+  local key="$1" file="$SRC_DIR/../.env.production"
+  [ -f "$file" ] && sed -n "s/^${key}=//p" "$file" | head -1
+}
+SUPABASE_URL="${SUPABASE_URL:-$(_env_from_dotfile NEXT_PUBLIC_SUPABASE_URL)}"
+SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY:-$(_env_from_dotfile NEXT_PUBLIC_SUPABASE_ANON_KEY)}"
+if [ -z "$SUPABASE_ANON_KEY" ]; then
+  echo "WARNING: SUPABASE_ANON_KEY not set and no .env.production found —" >&2
+  echo "the gateway's Supabase-JWT auth path will reject all user tokens" >&2
+  echo "(shared-secret auth still works). Set it in $ENV_FILE and restart." >&2
+fi
+
 # Non-secret settings are rewritten on every deploy (idempotent).
 grep -v -E '^(OLLAMA_URL|GB10_ALLOWED_MODELS|GB10_ALLOWED_TIERS|SUPABASE_URL|SUPABASE_ANON_KEY)=' "$ENV_FILE" > "$ENV_FILE.tmp" || true
 {
@@ -38,8 +56,8 @@ grep -v -E '^(OLLAMA_URL|GB10_ALLOWED_MODELS|GB10_ALLOWED_TIERS|SUPABASE_URL|SUP
   echo "OLLAMA_URL=http://localhost:11434"
   echo "GB10_ALLOWED_MODELS=${GB10_ALLOWED_MODELS:-qwen2.5:14b,llama3.1:8b,gemma2:9b,qwen2.5:7b}"
   echo "GB10_ALLOWED_TIERS=admin,guest,paid"
-  echo "SUPABASE_URL=${SUPABASE_URL:-https://mcnknhbtipvclirawhxw.supabase.co}"
-  echo "SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jbmtuaGJ0aXB2Y2xpcmF3aHh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwOTkzNDUsImV4cCI6MjA5ODY3NTM0NX0.mnkJTXA6zXWIB70DXb8vpLO4SdBDs2soxrKLlcDA1fo}"
+  [ -n "$SUPABASE_URL" ] && echo "SUPABASE_URL=$SUPABASE_URL"
+  [ -n "$SUPABASE_ANON_KEY" ] && echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
 } > "$ENV_FILE.new"
 mv "$ENV_FILE.new" "$ENV_FILE"
 rm -f "$ENV_FILE.tmp"
