@@ -69,14 +69,13 @@ jobs:
         run: |
           npm ci
           npx cap sync ios
-      - name: Install CocoaPods deps
-        working-directory: ios/App
-        run: pod install
+      # Capacitor 8 scaffolds iOS with Swift Package Manager (CapApp-SPM),
+      # not CocoaPods — xcodebuild resolves the packages itself.
       - name: Build unsigned archive
         working-directory: ios/App
         run: |
           xcodebuild archive \
-            -workspace App.xcworkspace -scheme App \
+            -project App.xcodeproj -scheme App \
             -configuration Release -sdk iphoneos \
             -archivePath "$RUNNER_TEMP/Kundali.xcarchive" \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
