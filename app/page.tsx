@@ -1,102 +1,97 @@
-import Link from "next/link";
-import {
-  ArrowRight,
-  Calculator,
-  Grid3x3,
-  MessageCircleQuestion,
-  Moon,
-  Sparkles,
-  Telescope,
-  type LucideIcon,
-} from "lucide-react";
-
-const FEATURES: Array<{ title: string; body: string; icon: LucideIcon }> = [
-  {
-    title: "Deterministic engine",
-    body: "Swiss Ephemeris sidereal positions (Lahiri), whole-sign houses, dignities, combustion and retrogression — computed, never guessed.",
-    icon: Calculator,
-  },
-  {
-    title: "Shodasha vargas",
-    body: "All 16 divisional charts per BPHS — navamsha for dharma and marriage, dashamsha for career, and the rest.",
-    icon: Grid3x3,
-  },
-  {
-    title: "Vimshottari dashas",
-    body: "Full maha → antar → pratyantar tree with the active path highlighted and exact dates.",
-    icon: Moon,
-  },
-  {
-    title: "Gochara & Sade Sati",
-    body: "Moon-reference transits, Sade Sati phases, Jupiter–Saturn double-transit detection.",
-    icon: Telescope,
-  },
-  {
-    title: "Grounded predictions",
-    body: "Scored indications per life area with a full substantiation trail back to engine facts.",
-    icon: Sparkles,
-  },
-  {
-    title: "Ask your chart",
-    body: "A chat that answers only from the computed chart — every claim cites a dasha, transit or yoga.",
-    icon: MessageCircleQuestion,
-  },
-];
+import { Calculator, Grid3x3, Moon, Telescope, Lock, MessageCircle } from "lucide-react";
+import Hero from "@/components/landing/Hero";
+import StarField from "@/components/landing/StarField";
+import FeatureSection from "@/components/landing/FeatureSection";
+import DerivationShowcase from "@/components/landing/DerivationShowcase";
+import ComparisonSection from "@/components/landing/ComparisonSection";
+import Footer from "@/components/landing/Footer";
 
 export default function LandingPage() {
   return (
-    <main className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-20">
-      <div className="text-center">
-        <p className="mb-4 text-sm uppercase tracking-[0.3em] text-gold-500">
-          ॐ · Jyotisha, computed
-        </p>
-        <h1 className="font-display text-5xl font-bold tracking-tight text-slate-100 sm:text-6xl">
-          Kundali
-        </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-400">
-          A rigorous Vedic astrology engine — South Indian charts, all sixteen
-          vargas, Vimshottari dashas, transits, yogas and predictions — every
-          statement traceable to a deterministic calculation. Narration is
-          grounded strictly in engine output, never invented.
-        </p>
-        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link
-            href="/dashboard"
-            className="btn-gold w-full px-6 py-3 text-base sm:w-auto"
-          >
-            Open dashboard <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
-          <Link
-            href="/login"
-            className="btn-ghost w-full px-6 py-3 text-base sm:w-auto"
-          >
-            Sign in
-          </Link>
-        </div>
-      </div>
+    <main className="bg-night-950">
+      {/* Hero */}
+      <Hero />
 
-      <div className="mt-24 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {FEATURES.map((f, i) => (
-          <div
-            key={f.title}
-            className="card animate-fade-up p-6 shadow-glow transition-transform hover:-translate-y-0.5"
-            style={{ animationDelay: `${i * 60}ms` }}
-          >
-            <f.icon className="h-6 w-6 text-gold-500" aria-hidden />
-            <h3 className="mt-3 font-display text-lg font-semibold text-gold-300">
-              {f.title}
-            </h3>
-            <p className="mt-2 text-sm leading-relaxed text-slate-400">
-              {f.body}
-            </p>
-          </div>
-        ))}
-      </div>
+      {/* Divider with subtle accent */}
+      <div className="border-b border-night-600/20" />
 
-      <p className="mt-20 text-center text-xs text-slate-600">
-        Lahiri ayanamsa · whole-sign houses · Vimshottari 365.25d — all
-        configurable in the engine.
-      </p>
+      {/* Feature 1: Deterministic Engine */}
+      <FeatureSection
+        index={0}
+        icon={Calculator}
+        title="Rigorous Calculations"
+        description="Every position, aspect, and dignity is computed using Swiss Ephemeris and validated against NASA JPL Horizons. No approximations. No guessing."
+        points={[
+          "Lahiri ayanamsa (sidereal zodiac) with multiple options",
+          "Whole-sign houses for precise house placement",
+          "Arcsecond accuracy — within NASA standards",
+          "15,807 real charts crash-tested and verified",
+        ]}
+        visual={<StarField />}
+      />
+
+      {/* Feature 2: All 16 Vargas */}
+      <FeatureSection
+        index={1}
+        icon={Grid3x3}
+        title="Complete Divisional Charts"
+        description="All 16 shodasha vargas per BPHS — not just the rashi chart. Each varga reveals a different layer of your destiny."
+        points={[
+          "Navamsha for marriage, dharma, and hidden nature",
+          "Dashamsha for career and public life",
+          "Dwadasamsha, Trimshamsha, and 12 more — fully computed",
+          "Integrated varga corroboration for predictions",
+        ]}
+        visual={null}
+      />
+
+      {/* Feature 3: Dasha Systems */}
+      <FeatureSection
+        index={2}
+        icon={Moon}
+        title="Dashas & Transits"
+        description="Vimshottari and Chara dashas with minute-level precision, plus live transit tracking with Sade Sati and Jupiter–Saturn double transit detection."
+        points={[
+          "Full dasha tree: maha → antar → pratyantar with exact dates",
+          "Chara dasha for predictive timing",
+          "Gochara (transit) engine with Sade Sati phases",
+          "K.N. Rao's Jupiter–Saturn double-transit rules",
+        ]}
+        visual={null}
+      />
+
+      {/* Feature 4: Privacy & Control */}
+      <FeatureSection
+        index={3}
+        icon={Lock}
+        title="Private by Design"
+        description="Your birth data never leaves your account. BYOK (bring your own key) for AI, or run fully deterministic with zero external APIs."
+        points={[
+          "Supabase RLS — only you see your data",
+          "No third-party data brokers",
+          "Deterministic mode: all answers computed locally",
+          "Optional AI with claim verification and flagging",
+        ]}
+        visual={null}
+      />
+
+      {/* Divider */}
+      <div className="border-b border-night-600/20" />
+
+      {/* Derivation Showcase */}
+      <DerivationShowcase />
+
+      {/* Divider */}
+      <div className="border-b border-night-600/20" />
+
+      {/* Comparison Section */}
+      <ComparisonSection />
+
+      {/* Divider */}
+      <div className="border-b border-night-600/20" />
+
+      {/* Footer */}
+      <Footer />
     </main>
   );
 }

@@ -81,6 +81,14 @@ class PanchangaRequest(BaseModel):
     config: Optional[EngineConfigModel] = None
 
 
+class MuhurtaRequest(BaseModel):
+    birth: BirthDataModel
+    activity: str
+    from_date: Optional[str] = None  # ISO date; defaults to today
+    days: int = 30
+    config: Optional[EngineConfigModel] = None
+
+
 class MatchingRequest(BaseModel):
     groom: BirthDataModel
     bride: BirthDataModel
