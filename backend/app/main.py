@@ -5,7 +5,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import (charts, dashas, interpret, panchanga, predictions,
+from .routers import (charts, dashas, interpret, knowledge, panchanga, predictions,
                       strength, transits)
 
 app = FastAPI(
@@ -30,6 +30,7 @@ app.include_router(predictions.router)
 app.include_router(interpret.router)
 app.include_router(panchanga.router)
 app.include_router(strength.router)
+app.include_router(knowledge.router)
 
 
 @app.get("/health")

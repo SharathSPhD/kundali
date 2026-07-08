@@ -1,0 +1,85 @@
+# Life-area nodes: which bhavas, karakas and vargas govern each askable
+# life area. Extends knowledge/rules/area_house_polarity.yaml (which keeps
+# the numeric polarity weights used by the scoring engine) with the graph
+# structure needed for question answering and derivation chains.
+areas:
+  career:
+    aliases: [career, job, profession, work, business, promotion, occupation, vocation]
+    primary_houses: [10]
+    supporting_houses: [6, 2, 11]
+    karakas: [Saturn, Sun, Mercury]
+    varga: D10
+    varga_reason: dashamsha is the divisional chart of karma/profession
+    source: BPHS judgement of the 10th; standard karaka attribution (Saturn=service, Sun=authority, Mercury=trade)
+  wealth:
+    aliases: [wealth, money, finance, finances, income, prosperity, savings, assets]
+    primary_houses: [2, 11]
+    supporting_houses: [9, 5]
+    karakas: [Jupiter]
+    varga: D2
+    varga_reason: hora is the divisional chart of wealth
+    source: BPHS judgement of the 2nd/11th; Jupiter as dhana-karaka
+  health:
+    aliases: [health, illness, disease, sickness, medical, vitality, wellbeing]
+    primary_houses: [1, 6]
+    supporting_houses: [8, 12]
+    karakas: [Sun, Saturn]
+    varga: D30
+    varga_reason: trimshamsha is the divisional chart of misfortunes/disease
+    source: BPHS judgement of the 1st/6th; Sun as vitality karaka, Saturn as chronic-disease karaka
+  relationships:
+    aliases: [marriage, spouse, partner, relationship, relationships, love, romance, wedding, wife, husband]
+    primary_houses: [7]
+    supporting_houses: [2, 4, 5, 12]
+    karakas: [Venus, Jupiter]
+    varga: D9
+    varga_reason: navamsha is the divisional chart of marriage/dharma
+    source: BPHS judgement of the 7th; Venus as kalatra-karaka (Jupiter for the husband in a woman's chart)
+  family:
+    aliases: [family, parents, mother, father, home, domestic, household, property]
+    primary_houses: [4, 2]
+    supporting_houses: [9]
+    karakas: [Moon, Sun]
+    varga: D12
+    varga_reason: dwadashamsha is the divisional chart of parents
+    source: BPHS judgement of the 2nd/4th/9th; Moon=mother, Sun=father
+  education:
+    aliases: [education, study, studies, learning, exam, exams, school, college, degree, knowledge]
+    primary_houses: [5, 4]
+    supporting_houses: [9, 2]
+    karakas: [Mercury, Jupiter]
+    varga: D24
+    varga_reason: chaturvimshamsha is the divisional chart of learning
+    source: BPHS judgement of the 4th/5th/9th; Mercury=buddhi, Jupiter=jnana
+  children:
+    aliases: [children, child, kids, son, daughter, progeny, pregnancy, childbirth]
+    primary_houses: [5]
+    supporting_houses: [9, 11]
+    karakas: [Jupiter]
+    varga: D7
+    varga_reason: saptamsha is the divisional chart of progeny
+    source: BPHS judgement of the 5th; Jupiter as putra-karaka
+  spirituality:
+    aliases: [spirituality, spiritual, moksha, meditation, sadhana, enlightenment, dharma, religion]
+    primary_houses: [9, 12]
+    supporting_houses: [5, 8]
+    karakas: [Jupiter, Ketu]
+    varga: D20
+    varga_reason: vimshamsha is the divisional chart of worship/spiritual progress
+    source: BPHS judgement of the 9th/12th; Ketu as moksha-karaka
+  siblings:
+    aliases: [siblings, brother, brothers, sister, sisters, sibling]
+    primary_houses: [3]
+    supporting_houses: [11]
+    karakas: [Mars]
+    varga: D3
+    varga_reason: drekkana is the divisional chart of siblings
+    source: BPHS judgement of the 3rd (younger) / 11th (elder); Mars as bhratru-karaka
+  foreign:
+    aliases: [foreign, abroad, emigration, immigration, overseas, relocation, settle abroad, travel]
+    primary_houses: [12, 9]
+    supporting_houses: [7, 3]
+    karakas: [Rahu]
+    varga: D9
+    varga_reason: navamsha corroborates residence/dharma shifts
+    source: classical convention (12th=distant lands, 9th=long journeys); Rahu as videsha-karaka

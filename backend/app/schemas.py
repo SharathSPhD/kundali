@@ -153,3 +153,8 @@ class InterpretResponse(BaseModel):
     verified: Optional[bool] = None
     rejected_claims: list[dict[str, Any]] = []
     verification_warnings: list[str] = []
+    # Knowledge-graph Q&A: the derivation chain behind a deterministic
+    # answer — each step binds a cited classical rule to a computed chart
+    # fact ({claim, rule, source, facts}).
+    derivation: list[dict[str, Any]] = []
+    answer_kind: Optional[str] = None

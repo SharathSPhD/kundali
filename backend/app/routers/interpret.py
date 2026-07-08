@@ -6,10 +6,9 @@ from ..auth import UserDep
 from ..engine.predictions import predict
 from ..interpretation import get_provider
 from ..interpretation.gateway import ProviderBlocked, resolve_provider
-from ..oracle.answers import build_answer_packet
 from ..oracle.claim_parser import parse_claims
 from ..oracle.export import export_facts
-from ..oracle.intent import classify_intent
+from ..oracle.kg_answers import answer_question
 from ..oracle.verify_claims import verify_claims
 from ..schemas import InterpretRequest, InterpretResponse
 from ._common import parse_on, to_birth, to_config
@@ -31,13 +30,12 @@ def interpret(req: InterpretRequest, user: dict = UserDep):
 
     if req.provider == "template":
         if question:
-            intent_result = classify_intent(question)
-            packet = build_answer_packet(
-                intent_result["intent"], payload, question
-            )
+            packet = answer_question(question, payload)
             result = {
                 "text": packet["text"],
                 "citations": packet["citations"],
+                "derivation": packet.get("derivation", []),
+                "answer_kind": packet.get("answer_kind"),
                 "provider": "template_qa",
             }
             via = None

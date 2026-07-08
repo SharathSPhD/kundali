@@ -143,3 +143,73 @@ def test_upstream_failure_returns_502(client, monkeypatch):
         headers={"Authorization": "Bearer internal-test-secret"},
     )
     assert resp.status_code == 502
+
+
+# --- Supabase JWT auth path -------------------------------------------------
+
+FAKE_JWT = "aaa.bbb.ccc"  # shape only; verification is mocked
+
+
+def test_chat_allows_admin_jwt(client, monkeypatch):
+    monkeypatch.setattr(gateway_main, "_jwt_tier", lambda tok: "admin" if tok == FAKE_JWT else None)
+
+    class FakeResponse:
+        status_code = 200
+        content = b'{"message": {"content": "hi"}}'
+        headers = {"content-type": "application/json"}
+
+    class FakeAsyncClient:
+        def __init__(self, *a, **kw):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *a):
+            return False
+
+        async def post(self, url, json):
+            return FakeResponse()
+
+    monkeypatch.setattr(gateway_main.httpx, "AsyncClient", FakeAsyncClient)
+    resp = client.post(
+        "/api/chat",
+        json={"model": "llama3.1:8b"},
+        headers={"Authorization": f"Bearer {FAKE_JWT}"},
+    )
+    assert resp.status_code == 200
+
+
+def test_chat_rejects_basic_tier_jwt_with_403(client, monkeypatch):
+    monkeypatch.setattr(gateway_main, "_jwt_tier", lambda tok: "basic")
+    resp = client.post(
+        "/api/chat",
+        json={"model": "llama3.1:8b"},
+        headers={"Authorization": f"Bearer {FAKE_JWT}"},
+    )
+    assert resp.status_code == 403
+    assert "tier 'basic'" in resp.json()["detail"]
+
+
+def test_chat_rejects_invalid_jwt_with_401(client, monkeypatch):
+    monkeypatch.setattr(gateway_main, "_jwt_tier", lambda tok: None)
+    resp = client.post(
+        "/api/chat",
+        json={"model": "llama3.1:8b"},
+        headers={"Authorization": f"Bearer {FAKE_JWT}"},
+    )
+    assert resp.status_code == 401
+
+
+def test_models_endpoint_requires_auth(client):
+    assert client.get("/api/models").status_code == 401
+    resp = client.get(
+        "/api/models", headers={"Authorization": "Bearer internal-test-secret"}
+    )
+    assert resp.status_code == 200
+    assert resp.json()["models"] == ["llama3.1:8b"]
+
+
+def test_jwt_tier_rejects_non_jwt_shapes():
+    assert gateway_main._jwt_tier("no-dots-here") is None
+    assert gateway_main._jwt_tier("") is None

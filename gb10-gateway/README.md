@@ -1,5 +1,20 @@
 # Kundali GB10 gateway
 
+> **TL;DR — go live in two steps** (everything else is already automated by
+> `deploy-local.sh`, which installs the gateway as a systemd user service):
+>
+> ```bash
+> bash gb10-gateway/deploy-local.sh          # install/update the service (local-only)
+> tailscale funnel --bg --https=8443 8100    # expose it publicly (stable URL)
+> ```
+>
+> Then in the app: **Settings → Admin → GB10 gateway**, set the gateway URL
+> to `https://spark-5208.tailec14b1.ts.net:8443` and default model
+> `qwen2.5:14b` (stored in the `runtime_config` table — no Vercel env vars
+> needed). Admin/guest/paid users authenticate to the gateway with their own
+> Supabase session token; no shared secret has to be copied anywhere.
+
+
 A thin, API-key-gated FastAPI process that sits in front of the local
 Ollama install on this machine (GB10) and gives the Vercel-hosted backend
 a stable, authenticated way to reach it. Vercel serverless functions can't
