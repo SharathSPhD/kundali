@@ -10,7 +10,7 @@ from typing import Any, Optional
 
 import httpx
 
-from .base import GROUNDING_CONTRACT, InterpretationProvider, history_to_messages
+from .base import GROUNDING_CONTRACT, InterpretationProvider, history_to_messages, slim_payload_for_prompt
 from .ollama_provider import _extract_citations
 
 
@@ -31,7 +31,7 @@ class OpenAIProvider(InterpretationProvider):
                   history: Optional[list[dict]] = None) -> dict:
         user_content = (
             "Engine payload (the ONLY source of truth):\n"
-            + json.dumps(engine_payload, default=str)
+            + json.dumps(slim_payload_for_prompt(engine_payload), default=str)
             + "\n\nQuestion: "
             + (question or "Give a general reading for the current period.")
         )

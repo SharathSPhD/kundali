@@ -8,7 +8,7 @@ from typing import Any, Optional
 
 import httpx
 
-from .base import GROUNDING_CONTRACT, InterpretationProvider, history_to_messages
+from .base import GROUNDING_CONTRACT, InterpretationProvider, history_to_messages, slim_payload_for_prompt
 
 
 class OllamaProvider(InterpretationProvider):
@@ -31,13 +31,16 @@ class OllamaProvider(InterpretationProvider):
                   history: Optional[list[dict]] = None) -> dict:
         user_content = (
             "Engine payload (the ONLY source of truth):\n"
-            + json.dumps(engine_payload, default=str)
+            + json.dumps(slim_payload_for_prompt(engine_payload), default=str)
             + "\n\nQuestion: "
             + (question or "Give a general reading for the current period.")
         )
         body = {
             "model": self.model,
             "stream": False,
+            # Bound generation so a rambling completion can't push the
+            # serverless caller past its 60s function limit.
+            "options": {"num_predict": int(os.environ.get("OLLAMA_NUM_PREDICT", "800"))},
             "messages": (
                 [{"role": "system", "content": GROUNDING_CONTRACT}]
                 + history_to_messages(history)

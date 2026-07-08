@@ -284,3 +284,40 @@ def test_byok_base_url_non_http_scheme_is_rejected(monkeypatch):
 
     with pytest.raises(gateway.ProviderBlocked, match="not usable"):
         gateway.resolve_provider(_user())
+
+
+def test_slim_payload_keeps_cited_facts_and_drops_bulk():
+    """The LLM prompt payload must stay small (full payload measured at
+    ~56KB pushed prompt processing past Vercel's 60s limit) while keeping
+    every fact the narration contract cites."""
+    from app.interpretation.base import slim_payload_for_prompt
+
+    payload = {
+        "dasha_path": [{"lord": "Rahu"}],
+        "areas": [{"area": "career"}],
+        "chart": {"planets": {}},
+        "jaimini": {
+            "karakas": [{"karaka": "AK", "planet": "Sun"}],
+            "active": [{"sign_name": "Leo"}],
+            "chara_dasha": {"periods": ["x"] * 500},
+        },
+        "shadbala": {
+            "planets": {
+                "Sun": {
+                    "total_rupas": 10.0, "required_rupas": 6.5,
+                    "ratio": 1.5, "sufficient": True,
+                    "components": {"huge": ["y"] * 200},
+                }
+            },
+            "context": {"abda_lord": "Sun"},
+        },
+    }
+    slim = slim_payload_for_prompt(payload)
+    assert "chara_dasha" not in slim["jaimini"]
+    assert slim["jaimini"]["karakas"] == payload["jaimini"]["karakas"]
+    assert slim["jaimini"]["active"] == payload["jaimini"]["active"]
+    assert "components" not in slim["shadbala"]["planets"]["Sun"]
+    assert slim["shadbala"]["planets"]["Sun"]["total_rupas"] == 10.0
+    # Originals untouched (slim is a copy).
+    assert "chara_dasha" in payload["jaimini"]
+    assert slim["dasha_path"] == payload["dasha_path"]

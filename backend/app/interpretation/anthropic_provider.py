@@ -6,7 +6,7 @@ import json
 import os
 from typing import Any, Optional
 
-from .base import GROUNDING_CONTRACT, InterpretationProvider, history_to_messages
+from .base import GROUNDING_CONTRACT, InterpretationProvider, history_to_messages, slim_payload_for_prompt
 from .ollama_provider import _extract_citations
 
 
@@ -29,7 +29,7 @@ class AnthropicProvider(InterpretationProvider):
         client = anthropic.Anthropic(api_key=self.api_key)
         user_content = (
             "Engine payload (the ONLY source of truth):\n"
-            + json.dumps(engine_payload, default=str)
+            + json.dumps(slim_payload_for_prompt(engine_payload), default=str)
             + "\n\nQuestion: "
             + (question or "Give a general reading for the current period.")
         )

@@ -35,6 +35,37 @@ GROUNDING_CONTRACT = (
 )
 
 
+def slim_payload_for_prompt(engine_payload: dict) -> dict:
+    """Compact copy of the engine payload for LLM prompts.
+
+    The full payload runs ~56KB — dominated by the complete Jaimini chara
+    dasha period tree (~37KB) and per-component shadbala breakdowns — which
+    pushed prompt processing alone past Vercel's 60s function limit
+    (measured: 65s full vs 6.6s slimmed for the same question/model).
+    Claim verification still runs against the FULL payload; only the prompt
+    is slimmed, keeping every fact the narration contract actually cites:
+    karakas + active chara periods, per-planet shadbala totals, and
+    everything else untouched.
+    """
+    slim = dict(engine_payload)
+    jaimini = slim.get("jaimini")
+    if isinstance(jaimini, dict):
+        slim["jaimini"] = {
+            k: v for k, v in jaimini.items() if k in ("karakas", "active", "on")
+        }
+    shadbala = slim.get("shadbala")
+    if isinstance(shadbala, dict) and isinstance(shadbala.get("planets"), dict):
+        keep = ("total_rupas", "required_rupas", "ratio", "sufficient")
+        slim["shadbala"] = {
+            "planets": {
+                planet: {k: row.get(k) for k in keep if k in row}
+                for planet, row in shadbala["planets"].items()
+                if isinstance(row, dict)
+            }
+        }
+    return slim
+
+
 class UnsafeBaseUrlError(ValueError):
     """Raised when a user-supplied BYOK `base_url` resolves to a
     non-public address (SSRF guard)."""
